@@ -19,13 +19,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
-import net.mtu.eggplant.util.sql.SQLFunctions;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.log4j.Logger;
 
 import fll.db.Queries;
 import fll.util.LogUtils;
+import net.mtu.eggplant.util.sql.SQLFunctions;
 
 /**
  * Handle login credentials and if incorrect redirect back to login page.
@@ -52,6 +51,12 @@ public class DoLogin extends BaseFLLServlet {
                              final HttpServletResponse response,
                              final ServletContext application,
                              final HttpSession session) throws IOException, ServletException {
+    if(request.getLocalPort() == 80) {
+      session.setAttribute(SessionAttributes.MESSAGE,
+          "<p class='error'>You do not have permission to login. Please see administrator if you believe this is an error</p>");
+      response.sendRedirect(response.encodeRedirectURL("index.jsp"));
+      return;
+    }
     final DataSource datasource = ApplicationAttributes.getDataSource(application);
     Connection connection = null;
     try {

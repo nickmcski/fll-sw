@@ -24,13 +24,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
-import net.mtu.eggplant.util.sql.SQLFunctions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fll.db.Queries;
 import fll.util.FLLRuntimeException;
+import net.mtu.eggplant.util.sql.SQLFunctions;
 
 /**
  * Some utilities for dealing with the web.
@@ -107,9 +106,12 @@ public final class WebUtils {
       if (!addrStr.contains(":")) {
         // TODO skip IPv6 for now, need to figure out how to encode and get
         // Tomcat to listen on IPv6
+        String port = ":" + request.getLocalPort();
+        if(port == ":80")
+          port = "";
         if (!address.isLoopbackAddress()) {
           final String url = "http://"
-              + addrStr + ":" + request.getLocalPort() + "/" + request.getContextPath();
+              + addrStr + port + "/" + request.getContextPath();
           urls.add(url);
         }
       }
@@ -209,6 +211,10 @@ public final class WebUtils {
               + requestAddressStr);
         }
         return true;
+      }
+      if(request.getLocalPort() == 80) {
+        System.out.println("Error: user tried to login from port 80");
+        return false;
       }
     } catch (final UnknownHostException e) {
       if (LOGGER.isDebugEnabled()) {
