@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -56,6 +57,10 @@ public class GreedySolver {
   public static final String SUBJECTIVE_COLUMN_PREFIX = "Subj";
 
   private static final Logger LOGGER = LogUtils.getLogger();
+  
+//  static {
+//    LOGGER.setLevel(Level.ALL);
+//  }
 
 
   private final SolverParams solverParameters;
@@ -638,7 +643,12 @@ public class GreedySolver {
     SchedTeam team1 = null;
 
     final List<SchedTeam> possibleValues = new LinkedList<SchedTeam>();
-    Collections.shuffle(teams);
+    
+    if(solverParameters.shouldRandomizeTeams()) {
+      long randomSeed = solverParameters.getRandomSeed();
+      Collections.shuffle(teams, new Random(randomSeed));
+    }
+    
     for (final SchedTeam team : teams) {
       if (null == team1) {
         if (assignPerformance(team.getGroup(), team.getIndex(), timeslot, table, 0)) {
@@ -931,6 +941,9 @@ public class GreedySolver {
   }
 
   private CheckCanceled checkCanceled = null;
+  
+  private long startTime;
+  private final int maxSolveTime = 60 * 1000;
 
   /**
    * Solve the problem.
@@ -944,6 +957,7 @@ public class GreedySolver {
 
     try {
       LOGGER.info("Starting solve");
+      startTime = System.currentTimeMillis();
       scheduleNextStation();
     } catch (final InterruptedException e) {
       LOGGER.debug("Solver interrupted");
@@ -1006,8 +1020,12 @@ public class GreedySolver {
     }
     final int numWarnings = getNumWarnings(scheduleFile);
     if (numWarnings == -1) {
+      //System.err.println("The number of warnings is less than 1");
+      LOGGER.error("The number of warning is less than 1");
       return null;
     }
+    //System.err.println("Calling New objective Value");
+    LOGGER.info("Calling New Objective value");
     return new ObjectiveValue(solutionsFound, findLatestPerformanceTime(), numTeams, latestSubjectiveTime, numWarnings);
   }
 
@@ -1055,7 +1073,7 @@ public class GreedySolver {
    * @throws InterruptedException if the solver was canceled
    */
   private boolean scheduleNextStation() throws InterruptedException {
-    if (null != checkCanceled && checkCanceled.isCanceled()) {
+    if (null != checkCanceled && checkCanceled.isCanceled() /*|| (System.currentTimeMillis() - startTime) > maxSolveTime*/) {
       throw new InterruptedException();
     }
 
@@ -1122,7 +1140,6 @@ public class GreedySolver {
         }
 
         performanceTables[table] += getPerformanceAttemptOffset();
-        System.err.println("TABLE " + table + " SLOT " + performanceTables[table]);
         if (checkPerformanceBreaks(nextAvailablePerfSlot)) {
           final boolean result = schedPerf(table, nextAvailablePerfSlot);
           if (result) {
@@ -1152,7 +1169,6 @@ public class GreedySolver {
         }
       } else {
         for (final int table : possiblePerformanceTables) {
-          System.err.println("Call? Modifying Perf Tables here?");
           performanceTables[table] -= getPerformanceAttemptOffset();
         }
       }
@@ -1208,8 +1224,12 @@ public class GreedySolver {
     }
 
     LOGGER.info("Solution output to " + scheduleFile.getAbsolutePath());
-
-    final ObjectiveValue objective = computeObjectiveValue(scheduleFile);
+    ObjectiveValue objective = null ;
+    try {
+      objective = computeObjectiveValue(scheduleFile);
+    }catch(Exception ex) {
+      LOGGER.error("failed to compute objective value", ex);
+    }
     if (null == objective) {
       LOGGER.info("Objective is null, solution is not valid");
       if (!scheduleFile.delete()) {
@@ -1250,6 +1270,7 @@ public class GreedySolver {
         LOGGER.debug("Tightening numTimeslots from " + numTimeslots + " to " + newNumTimeslots);
       }
       numTimeslots = newNumTimeslots;
+      System.out.println("New timeslots " + numTimeslots);
     } else {
       if (!scheduleFile.delete()) {
         scheduleFile.deleteOnExit();
@@ -1312,8 +1333,17 @@ public class GreedySolver {
       csv.writeNext(line.toArray(new String[line.size()]));
       line.clear();
 
+      
+      int teamIndex = 0;
       for (final SchedTeam team : getAllTeams()) {
-        final int teamNum = (team.getGroup() + 1) * 100 + team.getIndex();
+        int teamNum = 0;
+        if(solverParameters.getTeamNumbers() == null || solverParameters.getTeamNumbers().length == 0) {
+          teamNum = (team.getGroup() + 1) * 100 + team.getIndex();
+        }else {
+          if(solverParameters.getTeamNumbers().length < (teamIndex + 1))
+            System.err.println("More teams then there are team numbers");
+          teamNum = solverParameters.getTeamNumbers()[teamIndex];
+        }
         final int judgingGroup = team.getGroup();
         line.add(String.valueOf(teamNum));
         line.add("Team " + teamNum);
@@ -1338,6 +1368,7 @@ public class GreedySolver {
               final LocalTime time = getTime(performance_timeslot[team.getGroup()][team.getIndex()][table][side], round + 1);
               if (null != time) {
                 final String tableName = String.format("Table%d", (table + 1));
+                //TODO Allow user to enter table colors
                 final int displayedSide = side + 1;
                 perfTimes.add(new PerformanceTime(time, tableName, displayedSide));
               }
@@ -1356,6 +1387,7 @@ public class GreedySolver {
 
         csv.writeNext(line.toArray(new String[line.size()]));
         line.clear();
+        teamIndex++;
       }
     }
   }

@@ -51,6 +51,12 @@ public class SolverParams extends SchedParams {
   public static final String GROUP_COUNTS_KEY = "group_counts";
 
   public static final String GROUP_NAMES_KEY = "group_names";
+  
+  public static final String RANDOMIZE_TEAMS = "random_teams"; 
+  
+  public static final String RANDOM_SEED = "random_seed";
+  
+  public static final String TEAM_NUMBERS = "team_names";
 
   /**
    * Format for the number of breaks property. Expected to be
@@ -131,7 +137,11 @@ public class SolverParams extends SchedParams {
 
     this.tmaxHours = Utilities.readIntProperty(properties, TMAX_HOURS_KEY);
     this.tmaxMinutes = Utilities.readIntProperty(properties, TMAX_MINUTES_KEY);
+    
+    this.randomize_teams = Utilities.readBooleanProperty(properties, RANDOMIZE_TEAMS);
+    this.teamNumbers = Utilities.parseListOfIntegers(properties.getProperty(TEAM_NUMBERS));
 
+    this.setRandomSeed(properties.getProperty(RANDOM_SEED, "1"));
     parseBreaks(properties);
 
   }
@@ -139,7 +149,6 @@ public class SolverParams extends SchedParams {
   @Override
   public void save(final Properties properties) {
     super.save(properties);
-
     properties.setProperty(START_TIME_KEY, TournamentSchedule.formatTime(this.startTime));
 
     final int[] judgingGroupCounts = new int[judgingGroups.size()];
@@ -169,6 +178,11 @@ public class SolverParams extends SchedParams {
 
     properties.setProperty(TMAX_HOURS_KEY, Integer.toString(this.tmaxHours));
     properties.setProperty(TMAX_MINUTES_KEY, Integer.toString(this.tmaxMinutes));
+    
+    properties.setProperty(RANDOMIZE_TEAMS, Boolean.toString(randomize_teams));
+    properties.setProperty(RANDOM_SEED, String.valueOf(this.random_seed));
+    
+    properties.setProperty(TEAM_NUMBERS, Arrays.toString(teamNumbers));
 
     saveBreaks(properties);
 
@@ -211,7 +225,18 @@ public class SolverParams extends SchedParams {
   public Map<String, Integer> getJudgingGroups() {
     return Collections.unmodifiableMap(this.judgingGroups);
   }
+  
+  int[] teamNumbers = new int[0];
+  
+  public void setTeamNumbers(int[] teamsNumbers) {
+    this.teamNumbers = teamsNumbers;
+  }
 
+  public int[] getTeamNumbers() {
+    return this.teamNumbers;
+  }
+  
+  
   /**
    * Number of groups of teams.
    * Defaults to 0.
@@ -391,7 +416,37 @@ public class SolverParams extends SchedParams {
   public final void setTMaxMinutes(final int v) {
     this.tmaxMinutes = v;
   }
-
+  
+  /***
+   * Should the teams be randomized when assigning them to a time slot?
+   * 
+   * This helps to make sure teams are competing against random teams.
+   */
+  private boolean randomize_teams = true;
+  
+  public final void setRandomizeTeams(final boolean randomize_teams) {
+    this.randomize_teams = randomize_teams;
+  }
+  
+  public final boolean shouldRandomizeTeams() {
+    return this.randomize_teams;
+  }
+  
+  
+  private long random_seed = -1;
+ 
+  public final void setRandomSeed(final String seed) {
+    setRandomSeed(Long.valueOf(seed));
+  }
+  
+  public final void setRandomSeed(final long seed) {
+    this.random_seed = seed;
+  }
+  
+  public final long getRandomSeed() {
+    return this.random_seed;
+  }
+  
   private final LinkedList<ScheduledBreak> subjectiveBreaks = new LinkedList<ScheduledBreak>();
 
   /**
@@ -489,19 +544,16 @@ public class SolverParams extends SchedParams {
       // make sure performanceDuration is even
       final int performanceDurationMinutes = getPerformanceMinutes();
 
-      if ((performanceDurationMinutes
-          & 1) == 1) {
+      if ((performanceDurationMinutes & 1) == 1) {
         errors.add("Number of timeslots for performance duration minutes ("
             + performanceDurationMinutes + ") is not even and must be to alternate tables.");
       }
 
       // make sure num tables is even
-      if ((getNumTables()
-          & 1) == 1) {
+      if ((getNumTables() & 1) == 1) {
         errors.add("Number of tables ("
             + getNumTables() + ") is not even and must be to alternate tables.");
       }
-
     }
 
     return errors;

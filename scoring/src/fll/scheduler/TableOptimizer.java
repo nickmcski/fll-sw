@@ -238,7 +238,7 @@ public class TableOptimizer {
     final List<Map<PerformanceTime, Integer>> possibleValues = new LinkedList<>();
 
     final boolean oddNumberOfTeams = Utilities.isOdd(teams.size());
-
+    System.out.println("Table size is " + tables.size());
     final List<List<Integer>> possibleTableOrderings = permutate(tables.size()
         * 2);
     for (final List<Integer> ordering : possibleTableOrderings) {
@@ -362,6 +362,13 @@ public class TableOptimizer {
                                 final List<Integer> elements,
                                 final List<Integer> order,
                                 final List<List<Integer>> permutations) {
+    permutate(arrayCount, elements, order, permutations,0);
+  }
+  static private void permutate(final int arrayCount,
+                                final List<Integer> elements,
+                                final List<Integer> order,
+                                final List<List<Integer>> permutations,
+                                final int depth) {
     if (elements.isEmpty()) {
       throw new IllegalArgumentException("Cannot permutate 0 elements");
     }
@@ -373,6 +380,7 @@ public class TableOptimizer {
       order.set(position, elements.get(0));
       permutations.add(order);
     } else {
+      System.out.println("Perm size " + elements.size() + " Depth is " + depth);
       for (int i = 0; i < elements.size(); ++i) {
         final int element = elements.get(i);
         final List<Integer> newOrder = new ArrayList<Integer>(order);
@@ -380,7 +388,7 @@ public class TableOptimizer {
 
         final List<Integer> newElements = new ArrayList<Integer>(elements);
         newElements.remove(i);
-        permutate(arrayCount, newElements, newOrder, permutations);
+        permutate(arrayCount, newElements, newOrder, permutations, depth + 1);
       }
     }
   }

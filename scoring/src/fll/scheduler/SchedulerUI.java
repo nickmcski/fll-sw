@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
@@ -38,6 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.prefs.Preferences;
 
@@ -57,6 +59,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -102,9 +105,8 @@ public class SchedulerUI extends JFrame {
 
   public static void main(final String[] args) {
     LogUtils.initializeLogging();
-
+    //LogUtils.getLogger().setLevel(Level.ALL);
     Thread.setDefaultUncaughtExceptionHandler(new GuiExceptionHandler());
-
     // Use cross platform look and feel so that things look right all of the
     // time
     try {
@@ -185,6 +187,15 @@ public class SchedulerUI extends JFrame {
     final JScrollPane editorScroller = new JScrollPane(mScheduleDescriptionEditor);
     scheduleDescriptionPanel.add(editorScroller, BorderLayout.CENTER);
 
+    JTextArea desc_box = new JTextArea(4, 0);
+    desc_box.setText("123abc");
+    desc_box.setEditable(true);
+    desc_box.setVisible(true);
+    desc_box.setBackground(Color.blue);
+    desc_box.setFont(new Font("arial", Font.BOLD, 20));
+    desc_box.setForeground(Color.yellow);
+    scheduleDescriptionPanel.add(desc_box,BorderLayout.PAGE_END);
+    
     final JPanel schedulePanel = new JPanel(new BorderLayout());
     mTabbedPane.addTab("Schedule", schedulePanel);
 
@@ -206,6 +217,9 @@ public class SchedulerUI extends JFrame {
 
     final JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, dataScroller, violationScroller);
     schedulePanel.add(splitPane, BorderLayout.CENTER);
+    System.out.println("New Height " + this.getHeight());
+    splitPane.setResizeWeight(0.5d);
+    
 
     // initial state
     mWriteSchedulesAction.setEnabled(false);
@@ -240,7 +254,7 @@ public class SchedulerUI extends JFrame {
       final String startingDirectory = PREFS.get(DESCRIPTION_STARTING_DIRECTORY_PREF, null);
 
       final JFileChooser fileChooser = new JFileChooser();
-      final FileFilter filter = new BasicFileFilter("FLL Schedule Description (properties)",
+      final FileFilter filter = new BasicFileFilter("FLL Schedule Description (.properties)",
                                                     new String[] { "properties" });
       fileChooser.setFileFilter(filter);
       if (null != startingDirectory) {
@@ -251,8 +265,13 @@ public class SchedulerUI extends JFrame {
       if (returnVal == JFileChooser.APPROVE_OPTION) {
         final File currentDirectory = fileChooser.getCurrentDirectory();
         PREFS.put(DESCRIPTION_STARTING_DIRECTORY_PREF, currentDirectory.getAbsolutePath());
-
+        
         mScheduleDescriptionFile = fileChooser.getSelectedFile();
+        if(!mScheduleDescriptionFile.getName().contains(".")){
+          String newName = mScheduleDescriptionFile.getName() + ".properties";
+          mScheduleDescriptionFile = new File(fileChooser.getCurrentDirectory() + "/" + newName);
+        }
+        System.out.println("file is " + mScheduleDescriptionFile.getAbsolutePath());
         mDescriptionFilename.setText(mScheduleDescriptionFile.getName());
       } else {
         // user canceled
@@ -324,7 +343,10 @@ public class SchedulerUI extends JFrame {
   private void runScheduler() {
     try {
       saveScheduleDescription();
-
+      if(mScheduleDescriptionFile == null) {
+        LOGGER.error("Error running scheduler: User cancled the file save");
+        return;
+      }
       final SchedulerWorker worker = new SchedulerWorker();
 
       // make sure the task doesn't start until the window is up
@@ -362,7 +384,7 @@ public class SchedulerUI extends JFrame {
 
   private final class SchedulerWorker extends SwingWorker<Integer, Void> {
     private final GreedySolver solver;
-
+    //private boolean newRandom = false;
     public SchedulerWorker() throws IOException, ParseException, InvalidParametersException {
       this.solver = new GreedySolver(mScheduleDescriptionFile, false);
     }
@@ -401,11 +423,12 @@ public class SchedulerUI extends JFrame {
 
         loadScheduleFile(solutionFile, subjectiveStations);
 
-        final int result = JOptionPane.showConfirmDialog(SchedulerUI.this, "Would you like to run the table optimizer?",
-                                                         "Question", JOptionPane.YES_NO_OPTION);
-        if (JOptionPane.YES_OPTION == result) {
-          runTableOptimizer();
-        }
+        //TODO Fix the table optomiser so it works with large table sets 
+//        final int result = JOptionPane.showConfirmDialog(SchedulerUI.this, "Would you like to run the table optimizer?",
+//                                                         "Question", JOptionPane.YES_NO_OPTION);
+//        if (JOptionPane.YES_OPTION == result) {
+//          runTableOptimizer();
+//        }
 
       } catch (final ExecutionException e) {
         LOGGER.error("Error executing scheduler", e);
@@ -480,7 +503,53 @@ public class SchedulerUI extends JFrame {
       runScheduler();
     }
   };
+  
+  private final Action mRunSchedulerRandomAction = new AbstractAction("Generate new Random Schedule") {
+    {
+      putValue(SMALL_ICON, GraphicsUtils.getIcon("toolbarButtonGraphics/general/TipOfTheDay16.gif"));
+      putValue(LARGE_ICON_KEY, GraphicsUtils.getIcon("toolbarButtonGraphics/general/TipOfTheDay24.gif"));
+      putValue(SHORT_DESCRIPTION, "Randomize the teams and run the schedule again");
+      // putValue(MNEMONIC_KEY, KeyEvent.VK_S);
+    }
 
+    @Override
+    public void actionPerformed(final ActionEvent ae) {
+      if(mSchedParams == null)
+        return;
+      long startingSeed = mScheduleDescriptionEditor.getSeed();
+      int startingScore = getViolationTable().getRowCount();
+      long finishSeed;
+      int finishScore;
+      int attempts = 0;
+      Random rand = new Random();
+      
+      while(true) {
+        mScheduleDescriptionEditor.setRandomSeed(rand.nextLong());
+        runScheduler();
+        attempts++;
+        finishSeed = mScheduleDescriptionEditor.getSeed();
+        finishScore = getViolationTable().getRowCount();
+        if(finishScore == 0) {
+          System.out.println("Perfect score");
+          break;
+        }
+        if(finishScore < startingScore) {
+          System.out.println("Better Score");
+          startingSeed = finishSeed;
+          startingScore = finishScore;
+          //break;
+        }
+        if(attempts >= 100) {
+          mScheduleDescriptionEditor.setRandomSeed(startingSeed);
+          runScheduler();
+          break;
+        }
+          
+      }
+      System.out.println("Score START " + startingScore + " FINISH: " + finishScore);
+      System.out.println("Seed START: " + startingSeed + " FINISH: " + finishSeed);
+    }
+  };
   private final Action mOpenScheduleDescriptionAction = new AbstractAction("Open Schedule Description") {
     {
       putValue(SMALL_ICON, GraphicsUtils.getIcon("toolbarButtonGraphics/general/Open16.gif"));
@@ -494,7 +563,7 @@ public class SchedulerUI extends JFrame {
       final String startingDirectory = PREFS.get(DESCRIPTION_STARTING_DIRECTORY_PREF, null);
 
       final JFileChooser fileChooser = new JFileChooser();
-      final FileFilter filter = new BasicFileFilter("FLL Schedule Description (properties)",
+      final FileFilter filter = new BasicFileFilter("FLL Schedule Description (.properties)",
                                                     new String[] { "properties" });
       fileChooser.setFileFilter(filter);
       if (null != startingDirectory) {
@@ -575,6 +644,9 @@ public class SchedulerUI extends JFrame {
     toolbar.add(mReloadFileAction);
     toolbar.add(mWriteSchedulesAction);
     toolbar.add(mDisplayGeneralScheduleAction);
+    toolbar.addSeparator();
+    toolbar.add(mRunSchedulerAction);
+    toolbar.add(mRunSchedulerRandomAction);
 
     return toolbar;
   }
@@ -600,6 +672,7 @@ public class SchedulerUI extends JFrame {
     menu.add(mRunOptimizerAction);
     menu.add(mWriteSchedulesAction);
     menu.add(mDisplayGeneralScheduleAction);
+    menu.add(mRunSchedulerAction);
 
     return menu;
   }

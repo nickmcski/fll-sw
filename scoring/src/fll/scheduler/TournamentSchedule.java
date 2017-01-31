@@ -747,7 +747,7 @@ public class TournamentSchedule implements Serializable {
    */
   public TeamScheduleInfo checkIfTeamNeedsToStay(final TeamScheduleInfo si,
                                                  final int round) {
-    final int otherSide = 2 == si.getPerfTableSide(round) ? 1 : 2;
+    final int otherSide = (2 == si.getPerfTableSide(round)) ? 1 : 2;
     final TeamScheduleInfo next = findNextTeam(si.getPerfTime(round), si.getPerfTableColor(round), otherSide, round);
 
     if (null != next) {
@@ -788,21 +788,22 @@ public class TournamentSchedule implements Serializable {
 
     OutputStream pdfFos = null;
     try {
-      final File byDivision = new File(directory, baseFilename
-          + "-subjective-by-division.pdf");
-
-      pdfFos = new FileOutputStream(byDivision);
-      outputSubjectiveSchedulesByJudgingStation(pdfFos);
-      IOUtils.closeQuietly(pdfFos);
-      pdfFos = null;
-
-      final File byTime = new File(directory, baseFilename
-          + "-subjective-by-time.pdf");
-      pdfFos = new FileOutputStream(byTime);
-      outputSubjectiveSchedulesByTime(pdfFos);
-      IOUtils.closeQuietly(pdfFos);
-      pdfFos = null;
-
+      if(subjectiveStations.size() > 0) {
+        final File byDivision = new File(directory, baseFilename
+            + "-subjective-by-division.pdf");
+  
+        pdfFos = new FileOutputStream(byDivision);
+        outputSubjectiveSchedulesByJudgingStation(pdfFos);
+        IOUtils.closeQuietly(pdfFos);
+        pdfFos = null;
+  
+        final File byTime = new File(directory, baseFilename
+            + "-subjective-by-time.pdf");
+        pdfFos = new FileOutputStream(byTime);
+        outputSubjectiveSchedulesByTime(pdfFos);
+        IOUtils.closeQuietly(pdfFos);
+        pdfFos = null;
+      }
       final File performance = new File(directory, baseFilename
           + "-performance.pdf");
       pdfFos = new FileOutputStream(performance);

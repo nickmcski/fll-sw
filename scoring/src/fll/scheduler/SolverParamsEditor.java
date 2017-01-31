@@ -8,24 +8,40 @@ package fll.scheduler;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.filechooser.FileFilter;
 
+import fll.util.CSVCellReader;
 import fll.util.FormatterUtils;
+import net.mtu.eggplant.util.BasicFileFilter;
 
 /**
  * Editor for {@link SolverParams}.
  */
-public class SolverParamsEditor extends JPanel {
+public class SolverParamsEditor extends JPanel implements MouseListener, ActionListener {
 
   private final ScheduleTimeField startTimeEditor;
 
   private final JCheckBox alternateTables;
+
+  private final JCheckBox randomize_teams;
+
+  private long random_seed = -1;
 
   private final JFormattedTextField performanceDuration;
 
@@ -49,6 +65,9 @@ public class SolverParamsEditor extends JPanel {
 
   private final JudgingGroupListEditor judgingGroups;
 
+  private final JButton chooseTeamFile;
+  private int[] teamNumbers;
+
   private final ScheduledBreakListEditor subjectiveBreaks;
 
   private final ScheduledBreakListEditor performanceBreaks;
@@ -62,11 +81,17 @@ public class SolverParamsEditor extends JPanel {
     startTimeEditor.setInputVerifier(new ScheduleTimeField.TimeVerifier());
     addRow(new JLabel("Start Time:"), startTimeEditor);
 
-    alternateTables = new JCheckBox("Alternate tables");
+    alternateTables = new JCheckBox("Alternate performance table start time");
+    // alternateTables.add
+    alternateTables.setToolTipText("If this is selected every odd table will be offset by 1/2 the time of the performance duration");
     addRow(alternateTables);
 
+    randomize_teams = new JCheckBox("Randomize the teams when creating the schedule");
+    randomize_teams.setToolTipText("This will shuffle the list of teams before assigning them to a performance time.");
+    addRow(randomize_teams);
+
     performanceDuration = FormatterUtils.createIntegerField(1, 1000);
-    performanceDuration.setToolTipText("The number of minutes between performance runs");
+    performanceDuration.setToolTipText("The number of minutes each performance table will be 'occupied' for");
     addRow(new JLabel("Performance duration:"), performanceDuration);
 
     subjectiveStations = new SubjectiveStationListEditor();
@@ -74,11 +99,16 @@ public class SolverParamsEditor extends JPanel {
 
     changeDuration = FormatterUtils.createIntegerField(0, 1000);
     changeDuration.setToolTipText("The number of minutes that a team has between any 2 activities");
-    addRow(new JLabel("Change time duration:"), changeDuration);
+    addRow(new JLabel("Teams change time duration:"), changeDuration);
 
     performanceChangeDuration = FormatterUtils.createIntegerField(0, 1000);
     performanceChangeDuration.setToolTipText("The number of minutes that a team has between any 2 performance runs");
-    addRow(new JLabel("Performance change time duration:"), performanceChangeDuration);
+    addRow(new JLabel("Teams performance change time duration:"), performanceChangeDuration);
+
+    chooseTeamFile = new JButton("Select a file");
+    chooseTeamFile.setToolTipText("This loads a CSV file with all the team numbers.");
+    chooseTeamFile.addActionListener(this);
+    addRow(new JLabel("Load a team file to use"), chooseTeamFile);
 
     judgingGroups = new JudgingGroupListEditor();
     addRow(judgingGroups);
@@ -86,16 +116,16 @@ public class SolverParamsEditor extends JPanel {
     numPerformanceRounds = FormatterUtils.createIntegerField(0, 10);
     addRow(new JLabel("Number of performance rounds:"), numPerformanceRounds);
 
-    subjectiveFirst = new JCheckBox("Schedule subjective before performance");
+    subjectiveFirst = new JCheckBox("Schedule all subjective rounds before performance");
     addRow(subjectiveFirst);
 
     perfAttemptOffsetMinutes = FormatterUtils.createIntegerField(1, 1000);
     perfAttemptOffsetMinutes.setToolTipText("How many minutes later to try to find a new performance time slot when no team can be scheduled at a time.");
-    addRow(new JLabel("Number of minutes between performance attempts "), perfAttemptOffsetMinutes);
+    addRow(new JLabel("Time increment between each performance session"), perfAttemptOffsetMinutes);
 
     subjectiveAttemptOffsetMinutes = FormatterUtils.createIntegerField(1, 1000);
     subjectiveAttemptOffsetMinutes.setToolTipText("How many minutes later to try to find a new subjective time slot when no team can be scheduled at a time.");
-    addRow(new JLabel("Number of minutes between subjective attempts"), subjectiveAttemptOffsetMinutes);
+    addRow(new JLabel("Time increment between each subjective session"), subjectiveAttemptOffsetMinutes);
 
     numTables = FormatterUtils.createIntegerField(1, 1000);
     addRow(new JLabel("Number of performance tables"), numTables);
@@ -128,8 +158,7 @@ public class SolverParamsEditor extends JPanel {
     GridBagConstraints gbc;
 
     // for (final JComponent comp : components) {
-    for (int i = 0; i < components.length
-        - 1; ++i) {
+    for (int i = 0; i < components.length - 1; ++i) {
       final JComponent comp = components[i];
       gbc = new GridBagConstraints();
       gbc.anchor = GridBagConstraints.WEST;
@@ -143,8 +172,7 @@ public class SolverParamsEditor extends JPanel {
     gbc.gridwidth = GridBagConstraints.REMAINDER;
     gbc.weightx = 1.0;
     // add(new JPanel(), gbc);
-    add(components[components.length
-        - 1], gbc);
+    add(components[components.length - 1], gbc);
   }
 
   private SolverParams params;
@@ -154,6 +182,8 @@ public class SolverParamsEditor extends JPanel {
 
     startTimeEditor.setTime(params.getStartTime());
     alternateTables.setSelected(this.params.getAlternateTables());
+    randomize_teams.setSelected(params.shouldRandomizeTeams());
+    random_seed = params.getRandomSeed();
     performanceDuration.setValue(params.getPerformanceMinutes());
     changeDuration.setValue(params.getChangetimeMinutes());
     performanceChangeDuration.setValue(params.getPerformanceChangetimeMinutes());
@@ -184,9 +214,12 @@ public class SolverParamsEditor extends JPanel {
    * @return a non-null parameters object
    */
   public SolverParams getParams() {
+    params = new SolverParams();
 
     params.setStartTime(startTimeEditor.getTime());
     params.setAlternateTables(alternateTables.isSelected());
+    params.setRandomizeTeams(randomize_teams.isSelected());
+    params.setRandomSeed(random_seed);
     params.setPerformanceMinutes((Integer) performanceDuration.getValue());
     params.setChangetimeMinutes((Integer) performanceChangeDuration.getValue());
     params.setPerformanceChangetimeMinutes((Integer) performanceChangeDuration.getValue());
@@ -208,6 +241,128 @@ public class SolverParamsEditor extends JPanel {
     params.setPerformanceBreaks(performanceBreaks.getBreaks());
 
     return this.params;
+  }
+
+  public void setRandomSeed(long seed) {
+    this.random_seed = seed;
+  }
+
+  public long getSeed() {
+    return this.random_seed;
+  }
+
+  /**
+   * @see java.awt.event.MouseListener#mouseClicked(java.awt.event.MouseEvent)
+   */
+  @Override
+  public void mouseClicked(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  /**
+   * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
+   */
+  @Override
+  public void mousePressed(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  /**
+   * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
+   */
+  @Override
+  public void mouseReleased(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  /**
+   * @see java.awt.event.MouseListener#mouseEntered(java.awt.event.MouseEvent)
+   */
+  @Override
+  public void mouseEntered(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+
+  /**
+   * @see java.awt.event.MouseListener#mouseExited(java.awt.event.MouseEvent)
+   */
+  @Override
+  public void mouseExited(MouseEvent e) {
+    // TODO Auto-generated method stub
+
+  }
+  
+  public int[] getTeamNumbers() {
+    return teamNumbers;
+  }
+
+  /**
+   * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+   */
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    if (e.getSource() != chooseTeamFile)
+      return;
+
+    JFileChooser teamFileSelector = new JFileChooser();
+    FileFilter csvFilter = new BasicFileFilter("Team files", "csv");
+    teamFileSelector.setFileFilter(csvFilter);
+
+    final int returnValue = teamFileSelector.showOpenDialog(this);
+    if (returnValue == JFileChooser.APPROVE_OPTION) {
+      try {
+        File file = teamFileSelector.getSelectedFile();
+        if (file.exists()) {
+          System.out.println("Selected file " + file.getAbsolutePath());
+          CSVCellReader csvReader = new CSVCellReader(file);
+          String[] reader = csvReader.readNext();
+          if (reader == null) {
+            return;
+          }
+          int col = 0;
+          int teamNumberCol = -1;
+          for (String line : reader) {
+            if (line.equalsIgnoreCase("team") || line.equalsIgnoreCase("team number")
+                || line.equalsIgnoreCase("team #")) {
+              teamNumberCol = col;
+              break;
+            }
+            System.out.println(line);
+            col++;
+          }
+          int teams = 0;
+          String[] line;
+          ArrayList<Integer> allTeams = new ArrayList<Integer>();
+          for(;(line = csvReader.readNext()) != null; teams++) {
+            if(line.length > teamNumberCol) {
+              int teamNumber = Integer.valueOf(line[teamNumberCol]);
+              if(teamNumber > 0) {
+                allTeams.add(teamNumber);
+              }
+            }else {
+              System.err.println("Could not find team");
+            }
+          }
+          this.teamNumbers = new int[allTeams.size()];
+          int index = 0;
+          for(int teamNumber : allTeams) {
+            teamNumbers[index] = teamNumber;
+            index++;
+          }
+          params.setTeamNumbers(teamNumbers);
+//          System.out.println("Total number of teams " + allTeams.size());
+//          for(int teamNumber : allTeams) {
+//            System.out.println("Team : " + teamNumber);
+//          }
+        }
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
   }
 
 }
