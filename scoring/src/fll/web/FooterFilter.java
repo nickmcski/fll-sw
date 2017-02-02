@@ -74,6 +74,7 @@ public class FooterFilter implements Filter {
 
           final CharArrayWriter caw = new CharArrayWriter();
           final int bodyIndex = origStr.indexOf("</body>");
+
           if (-1 != bodyIndex
               && !noFooter(url)) {
             caw.write(origStr.substring(0, bodyIndex
@@ -151,6 +152,7 @@ public class FooterFilter implements Filter {
     }
   }
 
+
   /**
    * Writer the footer to the char array writer.
    */
@@ -166,6 +168,8 @@ public class FooterFilter implements Filter {
     formatter.format("  </tr>");
     formatter.format("  <tr><td>Software version: %s</td></tr>", Version.getVersion());
     formatter.format("</table>");
+    formatter.format("<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js\"></script>");
+    formatter.format("<script src=\"js/bootstrap.min.js\"></script>");
     formatter.format("%n</body></html>");
   }
 

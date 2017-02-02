@@ -149,10 +149,10 @@ public class HeaderFilter implements Filter {
   private static void addHeader(final CharArrayWriter caw,
                                 final HttpServletRequest request)
       throws IOException {
-    //final String contextPath = request.getContextPath();
+    //final String contextPath = request.getContextPath();  
     final Formatter formatter = new Formatter(caw);
-    formatter.format("<!-- Hello world --> \n");
-    formatter.format("<link rel=\"stylesheet\" type=\"text/css\" href=\"/fll-sw/css/bootstrap.min.css\"/>");
+    formatter.format("<link rel=\"icon\" type=\"image/png\" href=\"/favicon.png\"/> \n");
+    formatter.format("<link rel=\"stylesheet\" type=\"text/css\" href=\"/fll-sw/css/bootstrap.min.css\"/> \n");
     formatter.format("<link rel=\"stylesheet\" type=\"text/css\" href=\"/fll-sw/style/fll-sw.css\"/> \n");
     
   }

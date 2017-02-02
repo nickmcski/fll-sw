@@ -122,8 +122,7 @@ public class NavbarFilter implements Filter {
   private boolean noNavbar(String url) {
     if (url.endsWith("welcome.jsp")) {
       return true;
-    } else if (url.indexOf("scoreboard") != -1
-        && !url.endsWith("index.jsp")) {
+    } else if (url.indexOf("scoreboard") != -1 && !url.endsWith("index.jsp")) {
       return true;
     } else if (url.indexOf("playoff/remoteMain.jsp") != -1) {
       return true;
@@ -137,7 +136,7 @@ public class NavbarFilter implements Filter {
       return true;
     } else if (url.indexOf("report/finalist/PublicFinalistDisplaySchedule.jsp") != -1) {
       return true;
-    } else if(url.indexOf("slideshow/index.jsp") != -1) {
+    } else if (url.indexOf("slideshow/index.jsp") != -1) {
       return true;
     } else {
       return false;
@@ -155,33 +154,49 @@ public class NavbarFilter implements Filter {
     boolean loggedIn = WebUtils.checkAuthenticated(httpRequest);
     final Formatter ft = new Formatter(caw);
     String cp = httpRequest.getContextPath();
-    
-    //Navbar preamble
+
+    // Navbar preamble
     ft.format("\n<nav class=\"navbar navbar-default navbar-static-top\">");
     ft.format("<div class=\"container\">");
     ft.format("<div class=\"navbar-header\">");
-    ft.format("<a class=\"navbar-brand\" href=\"/fll-sw/\">%s</a>","2016 FIRST LEGO League - Animal Allies");
-    ft.format("</div>"); //end nav header
-    
-    
-    //Start navbar content
+    ft.format("<a class=\"navbar-brand\" href=\"/fll-sw/\">%s</a>", "2016 FIRST LEGO League - Animal Allies");
+    ft.format("</div>"); // end nav header
     ft.format("<div id=\"navbar\" class=\"navbar-collapse collapse\">");
+
+    // Start navbar content
     ft.format("<ul class=\"nav navbar-nav\">");
-      //Links
+    // Links
     ft.format("<li class=\"active\"><a href=\"%s\">Home</a></li>", cp);
-    
-    
-      //End links
     ft.format("</ul>");
+
+    ft.format("<ul class=\"nav navbar-nav navbar-right\">");
+    // Links
+    if (loggedIn) {
+      
+      ft.format("<li class=\"dropdown\">");
+      ft.format("<a href=\"%s/admin/\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Admin <span class=\"caret\"></span></a>", cp);
+      ft.format("<ul class=\"dropdown-menu\">");
+      ft.format("<li><a href=\"%s/admin/\">Administration</a></li>", cp);
+      ft.format("<li><a href=\"%s/report\">Reporting</a></li>", cp);
+      ft.format("<li><a href=\"%s/scoreEntry/select_team.jsp\">Score Entry</a></li>", cp);
+      ft.format("</ul>");
+      ft.format("</li>");
+      ft.format("<li><a href=\"%s/DoLogout\">Logout</a></li>", cp);
+    } else {
+      ft.format("<li><a href=\"%s/login.jsp\">Login</a></li>", cp);
+    }
+    ft.format("</ul>");
+
+    // End links
+
     ft.format("</div>");
     ft.format("</div>");
     ft.format("</nav>");
-//    
-//    ft.format("<p>NAVBAR HERE</p>");
-//    if(loggedIn){
-//      ft.format("<p>Admin logged in</p>");
-//    }
-    
+    //
+    // ft.format("<p>NAVBAR HERE</p>");
+    // if(loggedIn){
+    // ft.format("<p>Admin logged in</p>");
+    // }
 
   }
 
