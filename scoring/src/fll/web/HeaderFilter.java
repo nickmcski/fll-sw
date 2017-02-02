@@ -121,8 +121,7 @@ public class HeaderFilter implements Filter {
   private boolean noHeader(String url) {
     if (url.endsWith("welcome.jsp")) {
       return true;
-    } else if (url.indexOf("scoreboard") != -1
-        && !url.endsWith("index.jsp")) {
+    } else if (url.indexOf("scoreboard") != -1 && !url.endsWith("index.jsp")) {
       return true;
     } else if (url.indexOf("playoff/remoteMain.jsp") != -1) {
       return true;
@@ -136,7 +135,7 @@ public class HeaderFilter implements Filter {
       return true;
     } else if (url.indexOf("report/finalist/PublicFinalistDisplaySchedule.jsp") != -1) {
       return true;
-    } else if(url.indexOf("slideshow/index.jsp") != -1) {
+    } else if (url.indexOf("slideshow/index.jsp") != -1) {
       return true;
     } else {
       return false;
@@ -149,12 +148,13 @@ public class HeaderFilter implements Filter {
   private static void addHeader(final CharArrayWriter caw,
                                 final HttpServletRequest request)
       throws IOException {
-    //final String contextPath = request.getContextPath();  
+    // final String contextPath = request.getContextPath();
     final Formatter formatter = new Formatter(caw);
-    formatter.format("<link rel=\"icon\" type=\"image/png\" href=\"/favicon.png\"/> \n");
+    final String cp = request.getContextPath();
+    formatter.format("<link rel=\"icon\" type=\"image/png\" href=\"%s/favicon.png\"/> \n", cp);
     formatter.format("<link rel=\"stylesheet\" type=\"text/css\" href=\"/fll-sw/css/bootstrap.min.css\"/> \n");
     formatter.format("<link rel=\"stylesheet\" type=\"text/css\" href=\"/fll-sw/style/fll-sw.css\"/> \n");
-    
+
   }
 
   /**

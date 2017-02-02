@@ -3,7 +3,6 @@ package fll.web;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.util.Formatter;
 
 import javax.servlet.Filter;
@@ -16,11 +15,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import fll.db.Queries;
 import fll.util.LogUtils;
 
 /**
@@ -55,8 +52,6 @@ public class NavbarFilter implements Filter {
       final HttpServletRequest httpRequest = (HttpServletRequest) request;
       final ByteResponseWrapper wrapper = new ByteResponseWrapper(httpResponse);
       chain.doFilter(request, wrapper);
-
-      final String path = httpRequest.getRequestURI();
 
       final String contentType = wrapper.getContentType();
       if (wrapper.isStringUsed()) {
@@ -179,6 +174,7 @@ public class NavbarFilter implements Filter {
       ft.format("<li><a href=\"%s/admin/\">Administration</a></li>", cp);
       ft.format("<li><a href=\"%s/report\">Reporting</a></li>", cp);
       ft.format("<li><a href=\"%s/scoreEntry/select_team.jsp\">Score Entry</a></li>", cp);
+      ft.format("<li><a href=\"%s/admin/createUsername.jsp\">New User</a></li>", cp);
       ft.format("</ul>");
       ft.format("</li>");
       ft.format("<li><a href=\"%s/DoLogout\">Logout</a></li>", cp);
