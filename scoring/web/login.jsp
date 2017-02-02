@@ -20,6 +20,7 @@
  
 </head>
 <body>
+ <div class="sitelogin">
  <h1>Login to FLL</h1>
 
  <div class='status-message'>${message}</div>
@@ -31,5 +32,6 @@
   Password : <input type="password" size="15" name="pass" /><br /> <input
    name="submit_login" value="Login" type="submit" />
  </form>
+ </div>
 </body>
 </html>
