@@ -253,6 +253,11 @@ public final class WebUtils {
       SQLFunctions.close(connection);
     }
   }
+  
+  public static boolean checkAuthenticated(final HttpServletRequest request){
+    ServletContext application = request.getSession().getServletContext();
+    return checkAuthenticated(request, application);
+  }
 
   /**
    * Escape the string to be used in the value of a form field.

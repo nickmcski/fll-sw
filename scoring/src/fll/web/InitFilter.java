@@ -22,8 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
-import net.mtu.eggplant.util.sql.SQLFunctions;
-
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
@@ -32,6 +30,7 @@ import fll.db.GlobalParameters;
 import fll.util.FLLRuntimeException;
 import fll.util.LogUtils;
 import fll.xml.ChallengeDescription;
+import net.mtu.eggplant.util.sql.SQLFunctions;
 
 /**
  * Initialize web attributes.
@@ -217,7 +216,6 @@ public class InitFilter implements Filter {
 
   public static void initDataSource(final ServletContext application) {
     final String database = application.getRealPath("/WEB-INF/flldb");
-
     // initialize the datasource
     if (null == ApplicationAttributes.getDataSource(application)) {
       if (LOGGER.isDebugEnabled()) {

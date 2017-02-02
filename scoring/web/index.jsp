@@ -20,7 +20,6 @@
 <title>FLL-SW</title>
 <link rel="stylesheet" type="text/css"
  href="<c:url value='/style/fll-sw.css'/>" />
-<%@ include file="head.html" %>
 </head>
 
 <body>
@@ -97,6 +96,5 @@
 </c:if>
   <li><a href="credits/credits.jsp">Credits</a></li>
  </ul>
-
 </body>
 </html>
