@@ -466,7 +466,8 @@ public final class ScoreEntry {
       final String name = goalEle.getName();
       final String title = goalEle.getTitle();
       final String category = goalEle.getCategory();
-
+      if(prevCategory == null)
+        prevCategory = category;
       try {
 
         if (!StringUtils.equals(prevCategory, category)) {
