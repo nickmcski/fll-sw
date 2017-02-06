@@ -2,10 +2,34 @@
 
 BODY { 
   background: #FFFCFF;
-  margin-top: 4;
+/*
+  min-height: 100%;
+  height: 100%;
+*/
 }
+
 .sitelogin {
 	width: 30%;
 	margin: auto;
 	min-width: 400px;
+}
+
+/*
+table.footer {
+    height: 80px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+*/
+
+p.score {
+	text-align: center;
+}
+
+p.totalscore {
+	font-weight: bold;
+	font-size: larger;
 }

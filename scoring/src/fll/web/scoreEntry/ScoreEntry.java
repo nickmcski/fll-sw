@@ -299,7 +299,8 @@ public final class ScoreEntry {
         formatter.format("score += %s;%n", computedVarName);
 
         // set the score form element
-        formatter.format("document.scoreEntry.score_%s.value = %s;%n", name, computedVarName);
+        //formatter.format("document.scoreEntry.score_%s.value = %s;%n", name, computedVarName);
+        formatter.format("document.getElementById('score_%s').innerHTML = %s;%n", name, computedVarName);
         formatter.format("%n");
       }
     } // end foreach goal
@@ -503,8 +504,9 @@ public final class ScoreEntry {
 
         // computed score
         writer.println("  <td align='right'>");
-        writer.println("    <input type='text' name='score_"
-            + name + "' size='3' align='right' readonly tabindex='-1'>");
+//        writer.println("    <input type='text' name='score_"
+//            + name + "' size='3' align='right' readonly tabindex='-1'>");
+        writer.println("     <p class=\"score\" id=\"score_" + name + "\"></p>");
         writer.println("  </td>");
 
         // error message
@@ -583,11 +585,11 @@ public final class ScoreEntry {
     if (FP.equals(0, min, ChallengeParser.INITIAL_VALUE_TOLERANCE)
         && FP.equals(1, max, ChallengeParser.INITIAL_VALUE_TOLERANCE)) {
       writer.println("    <input type='text' name='"
-          + name + "_radioValue' size='3' align='right' readonly tabindex='-1'>");
+          + name + "_radioValue' size='3' align='right' readonly tabindex='-1' class='form-control'>");
     } else {
       // allow these to be editable
       writer.println("    <input type='text' name='"
-          + name + "' size='3' align='right' onChange='" + getCheckMethodName(name) + "()'>");
+          + name + "' size='3' align='right' onChange='" + getCheckMethodName(name) + "()' class='form-control'>");
     }
   }
 
@@ -744,7 +746,7 @@ public final class ScoreEntry {
 
     writer.println("  <td align='right'>");
     writer.println("    <input type='text' name='"
-        + goalName + "_radioValue' size='10' align='right' readonly tabindex='-1'>");
+        + goalName + "_radioValue' size='10' align='right' readonly tabindex='-1' class='form-control'>");
 
   }
 
@@ -845,7 +847,7 @@ public final class ScoreEntry {
 
     generateSwitch(formatter, compGoal.getSwitch(), goalName, INDENT_LEVEL);
 
-    formatter.format("%sdocument.scoreEntry.score_%s.value = %s;%n", generateIndentSpace(INDENT_LEVEL), goalName,
+    formatter.format("%sdocument.getElementById('score_%s').innerHTML = %s;%n", generateIndentSpace(INDENT_LEVEL), goalName,
                      getVarNameForComputedScore(goalName));
     formatter.format("}%n");
   }

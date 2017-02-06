@@ -72,7 +72,7 @@ function init() {
   refresh();
   
   /* Saves total score for smarter notification popups */
-  savedTotalScore = document.scoreEntry.totalScore.value;
+  savedTotalScore = document.getElementById('totalScore').innerHTML;
 }
 
 function refresh() { 
@@ -85,7 +85,7 @@ function refresh() {
     score = ${minimumAllowedScore};
   }
 
-  document.scoreEntry.totalScore.value = score;
+  savedTotalScore = document.getElementById('totalScore').innerHTML = score;
 
   check_restrictions();
 }
@@ -146,7 +146,7 @@ function verification() {
 if (Verified == 1)
 {
 	// Smarter Score Popups
-	if (savedTotalScore!=document.scoreEntry.totalScore.value)
+	if (savedTotalScore!= document.getElementById('totalScore').innerHTML)
 	 {
 		 m = "You are changing and verifying a score -- are you sure?";
 	 }
@@ -222,11 +222,11 @@ return m;
 
           <table class='score-entry' border='1'  bordercolor='#808080'>
           <colgroup>
-          <col width="30%"/> <!--  goal -->
-          <col width="20%"/> <!-- buttons -->
-          <col width="10%"/> <!-- count -->
-          <col width="10%"/> <!--  score -->
-          <col width="30%"/> <!--  error -->
+          <col width="3*"/> <!--  goal -->
+          <col width="2*"/> <!-- buttons -->
+          <col width="120px"/> <!-- count -->
+          <col width="50px"/> <!--  score -->
+          <col width="3*"/> <!--  error -->
           </colgroup>
             <tr>
               <td colspan='2'>
@@ -263,7 +263,8 @@ return m;
                   <font size='4'><u>Total Score:</u></font>
                 </td>
                 <td align='right'>
-                  <input type='text' name='totalScore' size='3' readonly tabindex='-1'>
+                  <!-- <input type='text' name='totalScore' size='3' readonly tabindex='-1'>   -->
+                  <p class='score totalscore' id='totalScore'/></p>
                 </td>
               </tr>
               <%ScoreEntry.generateVerificationInput(out);%>
