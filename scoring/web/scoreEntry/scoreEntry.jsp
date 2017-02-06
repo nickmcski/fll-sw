@@ -250,7 +250,7 @@ return m;
           <col width="2*"/> <!-- buttons -->
           <col width="120px"/> <!-- count -->
           <col width="50px"/> <!--  score -->
-          <col width="3*"/> <!--  error -->
+          <col width="0px"/> <!--  error -->
           </colgroup>
             <tr>
               <td colspan='2'>
@@ -295,13 +295,15 @@ return m;
                   <p class='score totalscore' id='totalScore'/></p>
                 </td>
               </tr>
-              <%ScoreEntry.generateVerificationInput(out);%>
+              <!-- </%ScoreEntry.generateVerificationInput(out);%/> -->
             </c:otherwise>
             </c:choose>  <!-- end check for bye -->
 			<tr>
 			<!-- Trigger the modal with a button -->
-			  <td>
-				<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+			  <td colspan='5' align='center'>
+			  	<input type="hidden" name="Verified" value="0" id="Verified"/>
+			  	<input type="hidden" name="signature" value="" id="signature"/>
+				<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" id="OpenSignature">Verify Score</button>
 				
 				<!-- Modal -->
 				<div id="myModal" class="modal fade" role="dialog">
@@ -311,7 +313,7 @@ return m;
 				    <div class="modal-content">
 				      <div class="modal-header">
 				        <button type="button" class="close" data-dismiss="modal">&times;</button>
-				        <h4 class="modal-title">Modal Header</h4>
+				        <h4 class="modal-title">Verification Signature</h4>
 				      </div>
 				        <div id="signature-pad" class="m-signature-pad">
 					    <div class="m-signature-pad--body">
@@ -319,13 +321,10 @@ return m;
 					    </div>
 					    <div class="m-signature-pad--footer">
 					      <div class="description">Sign above</div>
-					      <button type="button" class="button clear" data-action="clear">Clear</button>
-					      <button type="button" class="button save" data-action="save">Save</button>
+					      <button type="button" class="button clear btn" data-action="clear">Clear</button>
+					      <button type="button" class="button save btn" data-action="save" data-dismiss="modal">Save</button>
 					    </div>
 					  </div>
-				      <div class="modal-footer">
-				        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				      </div>
 				    </div>
 				
 				  </div>

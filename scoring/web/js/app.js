@@ -1,6 +1,7 @@
 var wrapper = document.getElementById("signature-pad"),
     clearButton = wrapper.querySelector("[data-action=clear]"),
     saveButton = wrapper.querySelector("[data-action=save]"),
+    openButton = window.document.getElementById("OpenSignature"),
     canvas = wrapper.querySelector("canvas"),
     signaturePad;
 
@@ -30,6 +31,15 @@ saveButton.addEventListener("click", function (event) {
     if (signaturePad.isEmpty()) {
         alert("Please provide signature first.");
     } else {
-        window.open(signaturePad.toDataURL());
+        window.document.getElementById("signature").value = signaturePad.toDataURL();
+        window.document.getElementById("Verified").value = 1;
+        Verified = 1;
     }
+});
+
+openButton.addEventListener("click", function (event) {
+  jQuery(this).parent().find('.modal').fadeIn();
+  jQuery(this).delay(1000);
+  resizeCanvas();
+  console.log("Signature Opened");
 });
