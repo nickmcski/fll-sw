@@ -845,7 +845,7 @@ public final class Queries {
       sql.append(", ComputedTotal = "
           + performanceElement.evaluate(teamScore));
     }
-
+    
     // now do each goal
     for (final AbstractGoal element : performanceElement.getGoals()) {
       if (!element.isComputed()) {
@@ -869,7 +869,10 @@ public final class Queries {
 
     sql.append(", Verified = "
         + request.getParameter("Verified"));
-
+    String signature = request.getParameter("signature");
+    if(signature.length() > 0){
+      sql.append(", Signature = '" + signature + "'");
+    }
     sql.append(" WHERE TeamNumber = "
         + teamNumber);
 
