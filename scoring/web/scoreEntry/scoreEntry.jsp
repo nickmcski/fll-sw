@@ -14,8 +14,7 @@
     </c:choose>
 
       <link rel="stylesheet" type="text/css" href="<c:url value='/style/fll-sw.css'/>" />
-      <script type="text/javascript" src="<c:url value='/js/app.js'/>"></script>
-	  <script type="text/javascript" src="<c:url value='/js/signature_pad.min.js'/>"></script>
+	  <link rel="stylesheet" type="text/css" href="<c:url value='/css/signature.css'/>" />
     <style type='text/css'>
       TD {font-family: arial}
       table#top_info {   
@@ -299,7 +298,40 @@ return m;
               <%ScoreEntry.generateVerificationInput(out);%>
             </c:otherwise>
             </c:choose>  <!-- end check for bye -->
-
+			<tr>
+			<!-- Trigger the modal with a button -->
+			  <td>
+				<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+				
+				<!-- Modal -->
+				<div id="myModal" class="modal fade" role="dialog">
+				  <div class="modal-dialog">
+				
+				    <!-- Modal content-->
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal">&times;</button>
+				        <h4 class="modal-title">Modal Header</h4>
+				      </div>
+				        <div id="signature-pad" class="m-signature-pad">
+					    <div class="m-signature-pad--body">
+					      <canvas></canvas>
+					    </div>
+					    <div class="m-signature-pad--footer">
+					      <div class="description">Sign above</div>
+					      <button type="button" class="button clear" data-action="clear">Clear</button>
+					      <button type="button" class="button save" data-action="save">Save</button>
+					    </div>
+					  </div>
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				      </div>
+				    </div>
+				
+				  </div>
+				</div>
+			  </td>
+			</tr>
             <tr>
               <td colspan='5' align='center'>
               	<div class="btn-group">
@@ -333,7 +365,8 @@ return m;
         </td>
       </tr>
     </table> <!-- end table to center everything -->
-    </form> <!-- end score entry form -->
+   	<script type="text/javascript" src="<c:url value='/js/signature_pad.min.js'/>"></script></form> <!-- end score entry form -->
+	<script type="text/javascript" src="<c:url value='/js/app.js'/>"></script>
 
   </body>
 </html>
