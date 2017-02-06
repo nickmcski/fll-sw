@@ -146,6 +146,7 @@ public final class ScoreEntry {
 
         // set method
         formatter.format("function %s(newValue) {%n", getSetMethodName(name));
+        formatter.format("  console.log('%s' + newValue);",name);
         formatter.format("  var temp = %s;%n", rawVarName);
         formatter.format("  %s = newValue;%n", rawVarName);
         formatter.format("  if(!isConsistent()) {%n");
@@ -271,19 +272,21 @@ public final class ScoreEntry {
           } // foreach value
           formatter.format("}%n");
         } else if (goal.isYesNo()) {
-          if(oldButtons){
+          //if(oldButtons){
             // set the radio button to match the gbl variable
             formatter.format("if(%s == 0) {%n", rawVarName);
             // 0/1 needs to match the order of the buttons generated in
             // generateYesNoButtons
-            formatter.format("  document.scoreEntry.%s[0].checked = true%n", name);
-            formatter.format("  document.scoreEntry.%s_radioValue.value = 'NO'%n", name);
+            formatter.format("  document.scoreEntry.%s[0].checked = true;%n", name);
+            formatter.format("  document.scoreEntry.%s[0].parentElement.classList += ' active';%n", name);
+            formatter.format("  document.scoreEntry.%s_radioValue.value = 'NO';%n", name);
             formatter.format("} else {%n");
-            formatter.format("  document.scoreEntry.%s[1].checked = true%n", name);
-            formatter.format("  document.scoreEntry.%s_radioValue.value = 'YES'%n", name);
+            formatter.format("  document.scoreEntry.%s[1].checked = true;%n", name);
+            formatter.format("  document.scoreEntry.%s[1].parentElement.classList += ' active';%n", name);
+            formatter.format("  document.scoreEntry.%s_radioValue.value = 'YES';%n", name);
             formatter.format("}%n");
             formatter.format("%s = %s * %s;%n", computedVarName, rawVarName, multiplier);
-          }
+          //}
         } else {
           // set the count form element
           formatter.format("document.scoreEntry.%s.value = %s;%n", name, rawVarName);
@@ -611,7 +614,7 @@ public final class ScoreEntry {
   /**
    * Generate yes and no buttons for goal name.
    */
-  public final static boolean oldButtons = true;
+  public final static boolean oldButtons = false;
   private static void generateYesNoButtons(final String name,
                                            final JspWriter writer)
       throws IOException {
@@ -621,21 +624,21 @@ public final class ScoreEntry {
     
     if(oldButtons){
     //writer.println("        <td>");
-    writer.println("          <input type='radio' id='" + name + "_no' name='" + name + "' value='0' onclick='"
+    writer.println("          <input type='radio' id='" + name + "_no' name='" + name + "' value='0' onchange='"
         + getSetMethodName(name) + "(0)'>");
     writer.println("          <label for='" + name + "_no'>No</label>");
 
     writer.println("          &nbsp;&nbsp;");
 
-    writer.println("          <input type='radio' id='" + name + "_yes' name='" + name + "' value='1' onclick='"
+    writer.println("          <input type='radio' id='" + name + "_yes' name='" + name + "' value='1' onchange='"
         + getSetMethodName(name) + "(1)'>");
     writer.println("          <label for='" + name + "_yes'>Yes</label>");
     //writer.println("        </td>");
     }else{
       //writer.println("<td>");
-      writer.println("<div class='btn-group btn-group-justified'>");
-      writer.println("<div class='btn-group'><button class='btn btn-default' type='button'>Yes</button></div>");
-      writer.println("<div class='btn-group'><button class='btn btn-default' type='button'>No</button></div>");
+      writer.println("<div class='btn-group btn-group-justified' data-toggle='buttons'>");
+      writer.println("<label class='btn btn-default'><input class='' type='radio' value='0' name='" + name + "' id='" + name + "_no' onchange='" + getSetMethodName(name) + "(0)'>No</label>");
+      writer.println("<label class='btn btn-default'><input class='' type='radio' value='1' name='" + name + "' id='" + name + "_yes' onchange='" + getSetMethodName(name) + "(1)'>Yes</label>");
       writer.println("</div>");
       //writer.println("</td>");
     }
