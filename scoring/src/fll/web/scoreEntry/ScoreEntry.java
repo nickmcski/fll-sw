@@ -302,12 +302,13 @@ public final class ScoreEntry {
     } // end foreach goal
 
     // set the radio buttons for score verification
-    formatter.format("if(Verified == 0) {%n");
-    // order of elements needs to match generateYesNoButtons
-    formatter.format("  document.scoreEntry.Verified[0].checked = true%n"); // NO
-    formatter.format("} else {%n");
-    formatter.format("  document.scoreEntry.Verified[1].checked = true%n"); // YES
-    formatter.format("}%n");
+    formatter.format("document.scoreEntry.Verified = Verified");
+//    formatter.format("if(Verified == 0) {%n");
+//    // order of elements needs to match generateYesNoButtons
+//    formatter.format("  document.scoreEntry.Verified[0].checked = true%n"); // NO
+//    formatter.format("} else {%n");
+//    formatter.format("  document.scoreEntry.Verified[1].checked = true%n"); // YES
+//    formatter.format("}%n");
 
     if (LOG.isTraceEnabled()) {
       LOG.trace("Exiting generateRefreshBody");
@@ -702,7 +703,7 @@ public final class ScoreEntry {
           } // !computed
         } // foreach goal
         // Always init the special double-check column
-        writer.println("  Verified = " + rs.getBoolean("Verified") + ";");
+        writer.println("  Verified = " + (rs.getBoolean("Verified") ? 1 : 0)  + ";");
       } else {
         throw new RuntimeException("Cannot find TeamNumber and RunNumber in Performance table" + " TeamNumber: "
             + teamNumber + " RunNumber: " + runNumber);
