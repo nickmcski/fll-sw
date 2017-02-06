@@ -481,7 +481,7 @@ public final class ScoreEntry {
 
         writer.println("<!-- "
             + name + " -->");
-        writer.println("<tr>");
+        writer.println("<tr id='" + name + "_row'>");
         writer.println("  <td>");
         writer.println("    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size='3'><b>"
             + title + ":</b></font>");

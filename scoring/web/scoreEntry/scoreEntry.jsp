@@ -121,6 +121,14 @@ function replaceText(sId, sText) {
       }
       el.appendChild(document.createTextNode(sText));
     }
+     var className = sId.substring(6) + '_row';
+     if( el = document.getElementById(className)){
+       if(sText.length > 0){
+       	el.className = "bg-danger";
+       }else{
+         el.className = "";
+       }
+     }
   }
 }
 
