@@ -14,7 +14,8 @@
     </c:choose>
 
       <link rel="stylesheet" type="text/css" href="<c:url value='/style/fll-sw.css'/>" />
-
+      <script type="text/javascript" src="<c:url value='/js/app.js'/>"></script>
+	  <script type="text/javascript" src="<c:url value='/js/signature_pad.min.js'/>"></script>
     <style type='text/css'>
       TD {font-family: arial}
       table#top_info {   
@@ -115,7 +116,7 @@ function replaceText(sId, sText) {
   var el;
   if(document.getElementById
      && (el = document.getElementById(sId))) {
-     if(el.hasChildNodes) { // check for support for has child nodes
+     if(el.hasChildNodes && false) { // check for support for has child nodes
       while (el.hasChildNodes()) {
         el.removeChild(el.lastChild);
       }
@@ -130,6 +131,22 @@ function replaceText(sId, sText) {
        }
      }
   }
+}
+
+function handleErrors(message){
+  if(el = document.getElementById("errors")){
+    if(message.length > 0){
+      el.style.display = "block";
+      el.innerHTML=message;
+    }else{
+      el.style.display = "none";
+      el.innerHTML="";
+    }
+  }
+}
+
+function showSignature(){
+  
 }
 
 /**
@@ -264,7 +281,11 @@ return m;
               </tr>
             </c:if>
               <%ScoreEntry.generateScoreEntry(out, application);%>
-
+			  <!-- Error section -->
+			  <tr>
+			  	<td colspan='5'>
+			  		<div class="errors alert alert-danger" id="errors" style="display:none"></div>
+			  	</td>
               <!-- Total Score -->
               <tr>
                 <td colspan='3'>
@@ -280,27 +301,32 @@ return m;
             </c:choose>  <!-- end check for bye -->
 
             <tr>
-              <td colspan='3' align='right'>
+              <td colspan='5' align='center'>
+              	<div class="btn-group">
                 <c:if test="${not isBye}">
                   <c:choose>
                   <c:when test="${1 == EditFlag}">
-                    <input type='submit' id='submit' name='submit' value='Submit Score' onclick='return confirm(verification())'>
+                    <!--<input type='submit' id='submit' name='submit' value='Submit Score' onclick='return confirm(verification())'>   -->
+                    <button type='submit' id='submit' class='btn btn-primary' name='submit' onclick='return confirm(verification())'>Submit Score</button> 
                   </c:when>
                   <c:otherwise>
-                    <input type='submit' id='submit' name='submit' value='Submit Score' onclick='return confirm("Submit Data -- Are you sure?")'>
+                    <!-- <input type='submit' id='submit' name='submit' value='Submit Score' onclick='return confirm("Submit Data -- Are you sure?")'> -->
+                    <button type='submit' id='submit' class='btn btn-primary' name='submit' onclick='return confirm("Submit Data -- Are you sure?")'>Submit Score</button> 
                   </c:otherwise>
                   </c:choose>
                 </c:if>
-                <input type='button' id='cancel' value='Cancel' onclick='CancelClicked()'>
+                <!-- <input type='button' id='cancel' value='Cancel' onclick='CancelClicked()'> -->
+                <button type='submit' id='cancel' class='btn btn-default' name='cancel' onclick='CancelClicked()'>Cancel</button> 
                 <c:if test="${1 == EditFlag and isLastRun}">
-                  <input type='submit' id='delete' name='delete' value='Delete Score' onclick='return confirm("Are you sure you want to delete this score?")'>
+                  <!-- <input type='submit' id='delete' name='delete' value='Delete Score' onclick='return confirm("Are you sure you want to delete this score?")'> -->
+                  <button type='submit' id='delete' class='btn btn-danger' name='delete' value="Delete Score" onclick='return confirm("Are you sure you want to delete this score?")'>Delete Score</button>
                 </c:if>
-              </td>
                 <c:if test="${not isBye}">
-              <td colspan='2'>
-                <input type='submit' id='no_show' name='submit' value='No Show' onclick='return submit_NoShow()'>
-              </td>
-              </c:if>
+                	<!-- <input type='submit' id='no_show' name='submit' value='No Show' onclick='return submit_NoShow()'> -->
+                	<button type='submit' id='no_show' class='btn btn-warning' name='submit' value='No Show' onclick='return submit_NoShow()'>No Show</button>
+              	</c:if>
+              </div>
+              </td>	
             </tr>
           </table> <!-- end score entry table  -->
 
