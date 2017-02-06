@@ -468,9 +468,9 @@ public final class ScoreEntry {
       try {
 
         if (!StringUtils.equals(prevCategory, category)) {
-          writer.println("<tr><td colspan='5'>&nbsp;</td></tr>");
+          writer.println("<tr><td colspan='4'>&nbsp;</td></tr>");
           if (!StringUtils.isEmpty(category)) {
-            writer.println("<tr><td colspan='5' class='center'><b>" + category + "</b></td></tr>");
+            writer.println("<tr><td colspan='4' class='center'><b>" + category + "</b></td></tr>");
           }
         }
 
@@ -501,9 +501,6 @@ public final class ScoreEntry {
         // + name + "' size='3' align='right' readonly tabindex='-1'>");
         writer.println("     <p class=\"score\" id=\"score_" + name + "\"></p>");
         writer.println("  </td>");
-
-        // error message
-        formatter.format("  <td class='error score-error' id='error_%s'>&nbsp;</td>%n", name);
 
         writer.println("</tr>");
         writer.println("<!-- end " + name + " -->");

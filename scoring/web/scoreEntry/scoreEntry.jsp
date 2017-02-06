@@ -113,14 +113,7 @@ function check_restrictions() {
  */
 function replaceText(sId, sText) {
   var el;
-  if(document.getElementById
-     && (el = document.getElementById(sId))) {
-     if(el.hasChildNodes && false) { // check for support for has child nodes
-      while (el.hasChildNodes()) {
-        el.removeChild(el.lastChild);
-      }
-      el.appendChild(document.createTextNode(sText));
-    }
+  if(document.getElementById) {
      var className = sId.substring(6) + '_row';
      if( el = document.getElementById(className)){
        if(sText.length > 0){
@@ -250,7 +243,6 @@ return m;
           <col width="2*"/> <!-- buttons -->
           <col width="120px"/> <!-- count -->
           <col width="50px"/> <!--  score -->
-          <col width="0px"/> <!--  error -->
           </colgroup>
             <tr>
               <td colspan='2'>
@@ -262,9 +254,6 @@ return m;
               <td align='right'>
                 <font size='4'><u>Score</u></font>
               </td>
-                <td align='center'>
-                  <font class='score-error' size='4'><u>Error Message</u></font>
-                </td>
             </tr>
 
             <c:choose>
@@ -276,13 +265,13 @@ return m;
             <c:otherwise>
             <c:if test="${isNoShow}">
               <tr>
-                <td colspan='5' class='center warning'>Editing a No Show - submitting score will change to a real run</td>
+                <td colspan='4' class='center warning'>Editing a No Show - submitting score will change to a real run</td>
               </tr>
             </c:if>
               <%ScoreEntry.generateScoreEntry(out, application);%>
 			  <!-- Error section -->
 			  <tr>
-			  	<td colspan='5'>
+			  	<td colspan='4'>
 			  		<div class="errors alert alert-danger" id="errors" style="display:none"></div>
 			  	</td>
               <!-- Total Score -->
@@ -300,7 +289,7 @@ return m;
             </c:choose>  <!-- end check for bye -->
 			<tr>
 			<!-- Trigger the modal with a button -->
-			  <td colspan='5' align='center'>
+			  <td colspan='4' align='center'>
 			  	<input type="hidden" name="Verified" value="0" id="Verified"/>
 			  	<input type="hidden" name="signature" value="" id="signature"/>
 				<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" id="OpenSignature">Verify Score</button>
@@ -332,7 +321,7 @@ return m;
 			  </td>
 			</tr>
             <tr>
-              <td colspan='5' align='center'>
+              <td colspan='4' align='center'>
               	<div class="btn-group">
                 <c:if test="${not isBye}">
                   <c:choose>
