@@ -167,7 +167,16 @@ public class NavbarFilter implements Filter {
     ft.format("<ul class=\"nav navbar-nav navbar-right\">");
     // Links
     if (loggedIn) {
+      //Reporting dropdown menu
+      ft.format("<li class=\"dropdown\">");
+      ft.format("<a href=\"%s/report/\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Reporting <span class=\"caret\"></span></a>", cp);
+      ft.format("<ul class=\"dropdown-menu\">");
+      ft.format("<li><a href=\"%s/report/\">Reporting</a></li>", cp);
+      ft.format("<li><a href=\"%s/report/allPerformanceReport.jsp\">All Performance</a></li>", cp);
+      ft.format("</ul>");
+      ft.format("</li>");
       
+      //Admin dropdown menu
       ft.format("<li class=\"dropdown\">");
       ft.format("<a href=\"%s/admin/\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Admin <span class=\"caret\"></span></a>", cp);
       ft.format("<ul class=\"dropdown-menu\">");
