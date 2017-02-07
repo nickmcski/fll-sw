@@ -57,15 +57,10 @@ function init() {
 
   <c:choose>
   <c:when test="${1 == EditFlag}">
-  <%
-    ScoreEntry.generateInitForScoreEdit(out, application, session);
-  %>
+  	<%ScoreEntry.generateInitForScoreEdit(out, application, session);%>
   </c:when>
   <c:otherwise>
-  <%
-  ScoreEntry.generateInitForNewScore(out, application);
-  %>
-
+  	<%ScoreEntry.generateInitForNewScore(out, application);%>
   </c:otherwise>
   </c:choose>
 
@@ -179,6 +174,8 @@ m = "You are submitting a score without verification -- are you sure?";
 return m;
 }
 }
+var vpw = (screen.width<=1024)?'740':'device-width';
+document.write('<meta name="viewport" content="width='+vpw+'" >');
 </script>
 
   </head>
