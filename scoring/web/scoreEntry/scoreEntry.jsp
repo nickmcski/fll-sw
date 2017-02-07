@@ -248,10 +248,10 @@ return m;
               <td colspan='2'>
                 <font size='4'><u>Goal</u></font>
               </td>
-              <td align='right'>
+              <td align='center'>
                 <font size='4'><u>Count</u></font>
               </td>
-              <td align='right'>
+              <td align='center'>
                 <font size='4'><u>Score</u></font>
               </td>
             </tr>
@@ -306,7 +306,7 @@ return m;
 				      </div>
 				        <div id="signature-pad" class="m-signature-pad">
 					    <div class="m-signature-pad--body">
-					      <canvas></canvas>
+					      <canvas width="550px" height="64px"></canvas>
 					    </div>
 					    <div class="m-signature-pad--footer">
 					      <div class="description">Sign above</div>
