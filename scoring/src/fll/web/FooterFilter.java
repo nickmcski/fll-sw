@@ -161,7 +161,7 @@ public class FooterFilter implements Filter {
     final String contextPath = request.getContextPath();
     final Formatter formatter = new Formatter(caw);
     formatter.format("<hr />");
-    formatter.format("<table>");
+    formatter.format("<table class=\"footer\">");
     formatter.format("  <tr>");
     formatter.format("    <td><a href='%s/index.jsp' target='_top'>Main Index</a></td>", contextPath);
     formatter.format("    <td><a href='%s/admin/index.jsp' target='_top'>Admin Index</a></td>", contextPath);
