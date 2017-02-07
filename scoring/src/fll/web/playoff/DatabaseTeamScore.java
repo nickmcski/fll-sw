@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import net.mtu.eggplant.util.sql.SQLFunctions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -137,6 +138,34 @@ public class DatabaseTeamScore extends TeamScore {
         throw new RuntimeException(sqle);
       }
     }
+  }
+  
+  public Timestamp getTime() {
+    if(!scoreExists()) {
+      return null;
+    } else {
+      try{
+        return getResultSet().getTimestamp("TIMESTAMP");
+      }catch (final SQLException sqle) {
+        System.err.println("Error getting timestamp");
+        sqle.printStackTrace();
+      }
+    }
+    return null;
+  }
+  
+  public String getSignatureBase64() {
+    if(!scoreExists()) {
+      return "";
+    } else {
+      try{
+        return getResultSet().getString("Signature");
+      }catch (final SQLException sqle) {
+        System.err.println("Error getting timestamp");
+        sqle.printStackTrace();
+      }
+    }
+    return "";
   }
 
   /**
