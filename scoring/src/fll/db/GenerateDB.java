@@ -227,6 +227,8 @@ public final class GenerateDB {
         createStatement.append(" ComputedTotal float DEFAULT NULL,");
         performanceColumns.append("StandardizedScore");
         createStatement.append(" StandardizedScore float default NULL,");
+        performanceColumns.append("Signature");
+        createStatement.append(" Signature LONGVARCHAR DEFAULT NULL,");
         createStatement.append(" CONSTRAINT "
             + tableName + "_pk PRIMARY KEY (TeamNumber, Tournament, RunNumber)");
         createStatement.append(",CONSTRAINT "

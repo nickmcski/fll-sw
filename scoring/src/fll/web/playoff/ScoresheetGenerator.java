@@ -5,18 +5,24 @@
  */
 package fll.web.playoff;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +35,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
@@ -37,6 +44,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.codec.Base64;
 
 import fll.Team;
 import fll.Utilities;
@@ -48,6 +56,7 @@ import fll.util.LogUtils;
 import fll.xml.AbstractGoal;
 import fll.xml.ChallengeDescription;
 import fll.xml.EnumeratedValue;
+import fll.xml.Goal;
 import fll.xml.PerformanceScoreCategory;
 import net.mtu.eggplant.util.sql.SQLFunctions;
 
@@ -65,6 +74,8 @@ public class ScoresheetGenerator {
   private final Font f6i = new Font(Font.FontFamily.HELVETICA, 6, Font.ITALIC);
 
   private String m_copyright;
+  
+  private DatabaseTeamScore m_score = null;
 
   /**
    * Create document with the specified number of sheets. Initially all sheets
@@ -84,6 +95,7 @@ public class ScoresheetGenerator {
       m_round[i] = SHORT_BLANK;
       m_number[i] = null;
       m_time[i] = null;
+      m_signature[i] = null;
     }
 
     setChallengeInfo(description);
@@ -122,7 +134,19 @@ public class ScoresheetGenerator {
                              final ChallengeDescription description)
       throws SQLException {
     final String numMatchesStr = request.getParameter("numMatches");
-    if (null == numMatchesStr) {
+    final String teamStr = request.getParameter("team");
+    final String matchStr = request.getParameter("match");
+    if ((null != matchStr) && (teamStr != null)) { 
+      
+      //Requesting a completed printout for a team
+      int team = Integer.parseInt(teamStr);
+      int match = Integer.parseInt(matchStr);
+      final Team teamNum= Team.getTeamFromDatabase(connection, team);
+      DatabaseTeamScore score = new DatabaseTeamScore("Performance", tournament, team, match,connection);
+      System.out.println("Team Number is " + team);
+      printSheetForTeam(teamNum, description, score);
+      return;
+    } else if (null == numMatchesStr) {
       // must have been called asking for blank
       m_numSheets = 1;
       initializeArrays();
@@ -136,6 +160,7 @@ public class ScoresheetGenerator {
         m_division[i] = SHORT_BLANK;
         m_number[i] = null;
         m_time[i] = null;
+        m_signature[i] = null;
       }
     } else {
       final String division = request.getParameter("division");
@@ -249,7 +274,22 @@ public class ScoresheetGenerator {
     }
     setChallengeInfo(description);
   }
-
+  public void printSheetForTeam(Team team, ChallengeDescription description, DatabaseTeamScore score) {
+    m_numSheets = 1;
+    initializeArrays();
+    System.out.println("Team is " + team);
+    
+    m_score = score;
+    m_round[0] = "" + score.getRunNumber();
+    //m_time[0] = score.get
+    m_name[0] = team.getTeamName();
+    m_number[0] = team.getTeamNumber();
+    SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss aa");
+    m_time[0] = format.format(score.getTime());
+    m_signature[0] = score.getSignatureBase64();
+    
+    setChallengeInfo(description);
+  }
   /**
    * Private support function to create new data arrays for the scoresheet
    * information. IMPORTANT!!! The value of m_numTeams must be set before the
@@ -263,6 +303,7 @@ public class ScoresheetGenerator {
     m_divisionLabel = new String[m_numSheets];
     m_division = new String[m_numSheets];
     m_time = new String[m_numSheets];
+    m_signature = new String[m_numSheets];
   }
 
   private static final Font ARIAL_8PT_NORMAL = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.NORMAL,
@@ -271,7 +312,8 @@ public class ScoresheetGenerator {
   private static final Font ARIAL_10PT_NORMAL = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.NORMAL);
 
   private static final Font COURIER_10PT_NORMAL = FontFactory.getFont(FontFactory.COURIER, 10, Font.NORMAL);
-
+  
+  private static final Font ARIAL_10PT_BOLD = FontFactory.getFont(FontFactory.HELVETICA,10,Font.BOLD);
   private static final int POINTS_PER_INCH = 72;
 
   /**
@@ -295,7 +337,7 @@ public class ScoresheetGenerator {
     }
   }
 
-  public void writeFile(final OutputStream out,
+  public Document writeFile(final OutputStream out,
                         final boolean orientationIsPortrait)
       throws DocumentException {
 
@@ -306,7 +348,8 @@ public class ScoresheetGenerator {
     } else {
       pdfDoc = new Document(PageSize.LETTER.rotate()); // landscape
     }
-    PdfWriter.getInstance(pdfDoc, out);
+    if(out != null)
+      PdfWriter.getInstance(pdfDoc, out);
 
     // Measurements are always in points (72 per inch)
     // This sets up 1/2 inch margins side margins and 0.35in top and bottom
@@ -349,17 +392,31 @@ public class ScoresheetGenerator {
     head.setVerticalAlignment(Element.ALIGN_TOP);
     head.addElement(titleParagraph);
 
+    //Signature field
+    //boolean m_signature = true;
+    //if (m_signature) {
+      final Phrase sig = new Phrase("Signature ___________________________", ARIAL_8PT_NORMAL);
+      final PdfPCell sigCell = new PdfPCell(sig);
+      sigCell.setBorder(0);
+      sigCell.setPaddingTop(30);
+      sigCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+      //final PdfImage signature = new PdfImage(signatureImage, name, maskRef)
+      //sigCell.setColspan(2);
+      //scoreSheet.addCell(sigCell);
+    //}
+    
     // Cells for score field, and 2nd check initials
-    final Phrase des = new Phrase("Data Entry Score _______", ARIAL_8PT_NORMAL);
-    final PdfPCell desC = new PdfPCell(des);
-    desC.setBorder(0);
-    desC.setPaddingTop(9);
-    desC.setPaddingRight(36);
-    desC.setHorizontalAlignment(Element.ALIGN_RIGHT);
+//    final Phrase des = new Phrase("Data Entry Score _______", ARIAL_8PT_NORMAL);
+//    final PdfPCell desC = new PdfPCell(des);
+//    desC.setBorder(0);
+//    desC.setPaddingTop(9);
+//    desC.setPaddingRight(36);
+//    desC.setHorizontalAlignment(Element.ALIGN_RIGHT);
     final Phrase sci = new Phrase("2nd Check Initials _______", ARIAL_8PT_NORMAL);
     final PdfPCell sciC = new PdfPCell(sci);
     sciC.setBorder(0);
-    sciC.setPaddingTop(9);
+    sciC.setPaddingTop(30);
     sciC.setPaddingRight(36);
     sciC.setHorizontalAlignment(Element.ALIGN_RIGHT);
 
@@ -378,6 +435,7 @@ public class ScoresheetGenerator {
 
       // This table is a single score sheet
       final PdfPTable scoreSheet = new PdfPTable(2);
+      
       // scoreSheet.getDefaultCell().setBorder(Rectangle.LEFT | Rectangle.BOTTOM
       // | Rectangle.RIGHT | Rectangle.TOP); //FIXME DEBUG should be NO_BORDER
       scoreSheet.getDefaultCell().setBorder(Rectangle.NO_BORDER);
@@ -429,7 +487,8 @@ public class ScoresheetGenerator {
 
       final PdfPCell temp1 = new PdfPCell(scoreSheet.getDefaultCell());
       // temp1.setColspan(2);
-      temp1.addElement(new Paragraph("Judge ____", ARIAL_8PT_NORMAL));
+      temp1.addElement(new Paragraph("Referee ________", ARIAL_8PT_NORMAL));
+      temp1.setHorizontalAlignment(Element.ALIGN_RIGHT);
       teamInfo.addCell(temp1);
 
       // Team number label cell
@@ -455,14 +514,14 @@ public class ScoresheetGenerator {
       // Team division value cell
       final Paragraph divV = new Paragraph(m_division[i], COURIER_10PT_NORMAL);
       final PdfPCell divVc = new PdfPCell(scoreSheet.getDefaultCell());
-      divVc.setColspan(2);
+      divVc.setColspan(3);
       divVc.addElement(divV);
       teamInfo.addCell(divVc);
 
-      final PdfPCell temp2 = new PdfPCell(scoreSheet.getDefaultCell());
-      // temp2.setColspan(2);
-      temp2.addElement(new Paragraph("Team ____", ARIAL_8PT_NORMAL));
-      teamInfo.addCell(temp2);
+//      final PdfPCell temp2 = new PdfPCell(scoreSheet.getDefaultCell());
+//      // temp2.setColspan(2);
+//      temp2.addElement(new Paragraph("Team ____", ARIAL_8PT_NORMAL));
+//      teamInfo.addCell(temp2);
 
       // Team name label cell
       final Paragraph nameP = new Paragraph("Team Name:", ARIAL_10PT_NORMAL);
@@ -484,6 +543,22 @@ public class ScoresheetGenerator {
       teamInfoCell.setColspan(2);
 
       scoreSheet.addCell(teamInfoCell);
+      
+      Image signature = null;
+      if(m_signature[i] != null && m_signature[i] != ""){
+        try {
+          //byte[] sigDataFile = Base64.decode(m_signature[i]);
+          //LOGGER.info(m_signature[i]);
+          byte[] sigDataFile = Base64.decode(m_signature[i].substring(22));
+          BufferedImage signatureImage = ImageIO.read(new ByteArrayInputStream(sigDataFile));
+          // Image.getInstance(m_signature[i]);
+          signature =Image.getInstance(signatureImage, Color.pink);
+        } catch (MalformedURLException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
 
       if (null != m_goalsTable) {
         final PdfPCell goalCell = new PdfPCell(m_goalsTable);
@@ -493,7 +568,14 @@ public class ScoresheetGenerator {
         scoreSheet.addCell(goalCell);
       }
 
-      scoreSheet.addCell(desC);
+      
+      if(signature != null){
+        scoreSheet.addCell(signature);
+        //LOGGER.info("Cell Widths " + (signature.getWidth()) + " Height " + signature.getHeight() + "Scaled " + signature.getScaledHeight() + " Plane " + signature.getPlainHeight());
+      }else{
+        scoreSheet.addCell(sigCell);
+      }
+      
       scoreSheet.addCell(sciC);
 
       if (null != m_copyright) {
@@ -546,8 +628,8 @@ public class ScoresheetGenerator {
       wholePage.addCell(blank);
       pdfDoc.add(wholePage);
     }
-
     pdfDoc.close();
+    return pdfDoc;
   }
 
   /**
@@ -572,16 +654,19 @@ public class ScoresheetGenerator {
     // use ArrayList as we will be doing indexed access in the loop
     final List<AbstractGoal> goals = new ArrayList<>(performanceElement.getGoals());
 
-    final float[] relativeWidths = new float[3];
+    final float[] relativeWidths = new float[4];
     relativeWidths[0] = 4;
     relativeWidths[1] = 48;
     relativeWidths[2] = 48;
+    relativeWidths[3] = 10;
     m_goalsTable = new PdfPTable(relativeWidths);
 
     String prevCategory = null;
+    int index = 0;
     for (int goalIndex = 0; goalIndex < goals.size(); ++goalIndex) {
       final AbstractGoal goal = goals.get(goalIndex);
       if (!goal.isComputed()) {
+        index++;
         final String category = goal.getCategory();
 
         // add category cell if needed
@@ -613,6 +698,7 @@ public class ScoresheetGenerator {
             categoryCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             categoryCell.setRotation(90);
             categoryCell.setRowspan(categoryRowSpan);
+            
             m_goalsTable.addCell(categoryCell);
           }
 
@@ -625,7 +711,7 @@ public class ScoresheetGenerator {
         final Paragraph p = new Paragraph(title, ARIAL_10PT_NORMAL);
         final PdfPCell goalLabel = new PdfPCell(p);
         goalLabel.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        goalLabel.setVerticalAlignment(Element.ALIGN_CENTER);
+        goalLabel.setVerticalAlignment(Element.ALIGN_MIDDLE);
         if (firstRowInCategory) {
           goalLabel.setBorderWidthTop(1);
           goalLabel.setBorderWidthBottom(0);
@@ -634,8 +720,11 @@ public class ScoresheetGenerator {
         } else {
           goalLabel.setBorder(0);
         }
+        if(index % 2 == 0) {
+          goalLabel.setBackgroundColor(new BaseColor(237, 237, 237));
+        }
         goalLabel.setPaddingRight(9);
-        goalLabel.setVerticalAlignment(Element.ALIGN_TOP);
+        //goalLabel.setVerticalAlignment(Element.ALIGN_TOP);
         if (StringUtils.isEmpty(category)) {
           // category column and goal label column
           goalLabel.setColspan(2);
@@ -652,47 +741,62 @@ public class ScoresheetGenerator {
         // of choices. Otherwise it is either yes/no or a numeric field.
         final PdfPCell goalValue = new PdfPCell();
         final Chunk choices = new Chunk("", COURIER_10PT_NORMAL);
-        if (goal.isEnumerated()) {
-          // replace spaces with "no-break" spaces
-          boolean first = true;
-          final List<EnumeratedValue> values = goal.getSortedValues();
-          Collections.reverse(values); // reverse as we want the bottom value
-                                       // from the score entry page to be on the
-                                       // left end
-          for (final EnumeratedValue value : values) {
-            if (!first) {
-              choices.append(" /"
-                  + Utilities.NON_BREAKING_SPACE);
-            } else {
-              first = false;
+        if(m_score == null) {
+          if (goal.isEnumerated()) {
+            // replace spaces with "no-break" spaces
+            boolean first = true;
+            final List<EnumeratedValue> values = goal.getSortedValues();
+            Collections.reverse(values); // reverse as we want the bottom value
+                                         // from the score entry page to be on the
+                                         // left end
+            for (final EnumeratedValue value : values) {
+              if (!first) {
+                choices.append(" /"
+                    + Utilities.NON_BREAKING_SPACE);
+              } else {
+                first = false;
+              }
+              choices.append(value.getTitle().toUpperCase().replace(' ', Utilities.NON_BREAKING_SPACE));
             }
-            choices.append(value.getTitle().toUpperCase().replace(' ', Utilities.NON_BREAKING_SPACE));
-          }
-          goalValue.addElement(choices);
-
-        } else {
-          if (goal.isYesNo()) {
-            // order of yes/no needs to match ScoreEntry.generateYesNoButtons
-            final Paragraph q = new Paragraph("NO / YES", COURIER_10PT_NORMAL);
-            goalValue.addElement(q);
-
+            goalValue.addElement(choices);
+  
           } else {
-            final String range = "("
-                + minStr + " - " + maxStr + ")";
-            final PdfPTable t = new PdfPTable(2);
-            t.setHorizontalAlignment(Element.ALIGN_LEFT);
-            t.setTotalWidth(1
-                * POINTS_PER_INCH);
-            t.setLockedWidth(true);
-            final Phrase r = new Phrase("", ARIAL_8PT_NORMAL);
-            t.addCell(new PdfPCell(r));
-            final Phrase q = new Phrase(range, ARIAL_8PT_NORMAL);
-            t.addCell(new PdfPCell(q));
-            goalValue.setPaddingTop(9);
-            goalValue.addElement(t);
+            if (goal.isYesNo()) {
+              // order of yes/no needs to match ScoreEntry.generateYesNoButtons
+              final Paragraph q = new Paragraph("NO / YES", COURIER_10PT_NORMAL);
+              goalValue.addElement(q);
+  
+            } else {
+              final String range = "("
+                  + minStr + " - " + maxStr + ")";
+              final PdfPTable t = new PdfPTable(2);
+              t.setHorizontalAlignment(Element.ALIGN_LEFT);
+              t.setTotalWidth(1
+                  * POINTS_PER_INCH);
+              t.setLockedWidth(true);
+              final Phrase r = new Phrase("", ARIAL_8PT_NORMAL);
+              t.addCell(new PdfPCell(r));
+              final Phrase q = new Phrase(range, ARIAL_8PT_NORMAL);
+              t.addCell(new PdfPCell(q));
+              goalValue.setPaddingTop(9);
+              goalValue.addElement(t);
+            }
           }
+        } else {
+          String score = "";
+          if(goal.isEnumerated()) {
+            score = m_score.getEnumRawScore(goal.getName());
+          } else {
+            double points = m_score.getRawScore(goal.getName());
+            if(goal.isYesNo()) {
+              score = (points == 1) ? "Yes" : "No";
+            } else {
+              score = String.valueOf(points);
+            }
+          }
+          final Paragraph q = new Paragraph(score, COURIER_10PT_NORMAL);
+          goalValue.addElement(q);
         }
-
         if (firstRowInCategory) {
           goalValue.setBorderWidthTop(1);
           goalValue.setBorderWidthBottom(0);
@@ -701,16 +805,67 @@ public class ScoresheetGenerator {
         } else {
           goalValue.setBorder(0);
         }
+        if(index % 2 == 0) {
+          goalValue.setBackgroundColor(new BaseColor(237, 237, 237));
+        }
         goalValue.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
         m_goalsTable.addCell(goalValue);
 
+        final PdfPCell pointValue = new PdfPCell();
+        if (firstRowInCategory) {
+          pointValue.setBorderWidthTop(1);
+          pointValue.setBorderWidthBottom(0);
+          pointValue.setBorderWidthLeft(0);
+          pointValue.setBorderWidthRight(0);
+        } else {
+          pointValue.setBorder(0);
+        }
+        
+        
+        if(goal instanceof Goal && m_score != null) {
+          //((Goal)goal)
+          //int maxPoints = (int) ((int) goal.getMax() * ((Goal)goal).getMultiplier());
+          String points = String.valueOf((int)goal.getComputedScore(m_score));
+          
+          Paragraph pointValueName = new Paragraph(points);
+          pointValue.addElement(pointValueName);
+          
+        }
+        //System.out.println("INDEX: " + goal.getName() + " : " + goalIndex);
+        if(index % 2 == 0) {
+          pointValue.setBackgroundColor(new BaseColor(237, 237, 237));
+        }
+        m_goalsTable.addCell(pointValue);
+        
         // setup for next loop
         prevCategory = category;
       } // if not computed goal
 
     } // foreach goal
-
+    //TOTAL
+    System.out.println("Calcuating total");
+    //Thread.currentThread().dumpStack();
+    PdfPCell totalDesc = new PdfPCell();
+    //totalDesc.setBorderColorTop(BaseColor.BLACK);
+    totalDesc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+    totalDesc.setColspan(3);
+    //totalDesc.setBackgroundColor(BaseColor.PINK);
+    Phrase totalText = new Phrase("Total Score", ARIAL_10PT_BOLD);
+    totalDesc.addElement(totalText);
+    m_goalsTable.addCell(totalDesc);
+    
+    PdfPCell totalValue = new PdfPCell();
+    //totalDesc.setBorderColorTop(BaseColor.BLACK);
+    totalValue.setHorizontalAlignment(Element.ALIGN_LEFT);
+    Paragraph score = null;
+    if(m_score == null) {
+      score = new Paragraph(SHORT_BLANK,ARIAL_10PT_NORMAL);
+    }else {
+      score = new Paragraph(String.valueOf((int) m_score.getRawScore("COMPUTEDTOTAL")));
+    }
+    totalValue.addElement(score);
+    m_goalsTable.addCell(totalValue);
   }
 
   private int m_numSheets;
@@ -736,6 +891,8 @@ public class ScoresheetGenerator {
   private String[] m_division;
 
   private String[] m_time;
+  
+  private String[] m_signature;
 
   private PdfPTable m_goalsTable;
 

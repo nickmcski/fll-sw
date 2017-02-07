@@ -6,10 +6,28 @@
 
 package fll.web.playoff;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.HashDocAttributeSet;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.JobName;
+import javax.print.attribute.standard.MediaSizeName;
+import javax.print.attribute.standard.OrientationRequested;
+import javax.print.event.PrintJobEvent;
+import javax.print.event.PrintJobListener;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -23,6 +41,7 @@ import net.mtu.eggplant.util.sql.SQLFunctions;
 import org.apache.log4j.Logger;
 import org.icepush.PushContext;
 
+import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 
 import fll.db.Queries;
@@ -61,7 +80,40 @@ public class ScoresheetServlet extends BaseFLLServlet {
       // scoresheets
       final ScoresheetGenerator gen = new ScoresheetGenerator(request, connection, tournament, challengeDescription);
 
-      gen.writeFile(response.getOutputStream(), orientationIsPortrait);
+      
+      //PrintStream printer = new PrintStream(out)
+      //gen.wri
+      if(request.getParameter("print") != null){
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        gen.writeFile(byteOut, orientationIsPortrait);
+        byteOut.flush();
+        HashDocAttributeSet attributes = new HashDocAttributeSet();
+        attributes.add(javax.print.attribute.standard.MediaSizeName.NA_LETTER);
+        Doc PDFOut = new SimpleDoc(byteOut.toByteArray(), DocFlavor.BYTE_ARRAY.PDF, attributes);
+        
+        PrintService service = PrintServiceLookup.lookupDefaultPrintService();
+        LOGGER.info(service + "Name: " + service.getName());
+        DocPrintJob printJob = service.createPrintJob();
+        LOGGER.info(Arrays.toString(printJob.getAttributes().toArray()));
+        try {
+          LOGGER.info("Printer Attributes" + Arrays.toString(service.getAttributes().toArray()));
+          PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
+          aset.add(OrientationRequested.PORTRAIT);
+          aset.add(new JobName("Test - Document", null));
+          aset.add(new javax.print.attribute.standard.Copies(1));
+          aset.add(MediaSizeName.NA_LETTER);
+          //aset.add(new javax.print.attribute.standard.MediaSize())
+          
+          printJob.addPrintJobListener(new PJListen());
+          printJob.print(PDFOut, aset);
+          System.out.println("Printed?");
+        } catch (PrintException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }else{
+        gen.writeFile(response.getOutputStream(), orientationIsPortrait);
+      }
 
     } catch (final SQLException e) {
       final String errorMessage = "There was an error talking to the database";

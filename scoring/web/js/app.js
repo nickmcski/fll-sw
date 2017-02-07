@@ -9,17 +9,17 @@ var wrapper = document.getElementById("signature-pad"),
 // to make it look crisp on mobile devices.
 // This also causes canvas to be cleared.
 function resizeCanvas() {
-    // When zoomed out to less than 100%, for some very strange reason,
-    // some browsers report devicePixelRatio as less than 1
-    // and only part of the canvas is cleared then.
-    var ratio =  Math.max(window.devicePixelRatio || 1, 1);
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    canvas.getContext("2d").scale(ratio, ratio);
+//    // When zoomed out to less than 100%, for some very strange reason,
+//    // some browsers report devicePixelRatio as less than 1
+//    // and only part of the canvas is cleared then.
+//    var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+//    canvas.width = canvas.offsetWidth * ratio;
+//    canvas.height = canvas.offsetHeight * ratio;
+//    canvas.getContext("2d").scale(ratio, ratio);
 }
 
-window.onresize = resizeCanvas;
-resizeCanvas();
+//window.onresize = resizeCanvas;
+//resizeCanvas();
 
 signaturePad = new SignaturePad(canvas);
 
@@ -40,6 +40,6 @@ saveButton.addEventListener("click", function (event) {
 openButton.addEventListener("click", function (event) {
   jQuery(this).parent().find('.modal').fadeIn();
   jQuery(this).delay(1000);
-  resizeCanvas();
+//  resizeCanvas();
   console.log("Signature Opened");
 });
