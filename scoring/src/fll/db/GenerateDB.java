@@ -225,7 +225,7 @@ public final class GenerateDB {
         }
         performanceColumns.append("ComputedTotal,");
         createStatement.append(" ComputedTotal float DEFAULT NULL,");
-        performanceColumns.append("StandardizedScore");
+        performanceColumns.append("StandardizedScore,");
         createStatement.append(" StandardizedScore float default NULL,");
         performanceColumns.append("Signature");
         createStatement.append(" Signature LONGVARCHAR DEFAULT NULL,");
@@ -266,6 +266,7 @@ public final class GenerateDB {
         createStatement.append(" note longvarchar DEFAULT NULL,");
         createStatement.append(" ComputedTotal float DEFAULT NULL,");
         createStatement.append(" StandardizedScore float default NULL,");
+        createStatement.append(" Signature LONGVARCHAR default NULL,");
         createStatement.append(" CONSTRAINT "
             + tableName + "_pk PRIMARY KEY (TeamNumber, Tournament, Judge)");
         createStatement.append(",CONSTRAINT "
