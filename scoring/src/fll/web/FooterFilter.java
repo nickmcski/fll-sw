@@ -77,13 +77,14 @@ public class FooterFilter implements Filter {
 
           if (-1 != bodyIndex
               && !noFooter(url)) {
+            boolean onlyStyles = onlyStyles(url);
             caw.write(origStr.substring(0, bodyIndex
                 - 1));
             if (path.startsWith(httpRequest.getContextPath()
                 + "/public")) {
-              addPublicFooter(caw, httpRequest);
+              addPublicFooter(caw, httpRequest, onlyStyles);
             } else {
-              addFooter(caw, httpRequest);
+              addFooter(caw, httpRequest, onlyStyles);
             }
             response.setContentLength(caw.toString().length());
             writer.print(caw.toString());
@@ -131,7 +132,7 @@ public class FooterFilter implements Filter {
     if (url.endsWith("welcome.jsp")) {
       return true;
     } else if (url.indexOf("scoreboard") != -1
-        && !url.endsWith("index.jsp")) {
+        && !(url.endsWith("index.jsp") || url.endsWith("V2.jsp"))) {
       return true;
     } else if (url.indexOf("playoff/remoteMain.jsp") != -1) {
       return true;
@@ -151,23 +152,37 @@ public class FooterFilter implements Filter {
       return false;
     }
   }
+  
+  
+  private boolean onlyStyles(String url) {
+    if (url.indexOf("scoreboard") != -1
+        && !url.endsWith("index.jsp")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
 
   /**
    * Writer the footer to the char array writer.
    */
   private static void addFooter(final CharArrayWriter caw,
-                                final HttpServletRequest request) throws IOException {
+                                final HttpServletRequest request,
+                                final boolean linksOnly) throws IOException {
     final String contextPath = request.getContextPath();
     final Formatter formatter = new Formatter(caw);
-    formatter.format("<hr />");
-    formatter.format("<table class=\"footer\">");
-    formatter.format("  <tr>");
-    formatter.format("    <td><a href='%s/index.jsp' target='_top'>Main Index</a></td>", contextPath);
-    formatter.format("    <td><a href='%s/admin/index.jsp' target='_top'>Admin Index</a></td>", contextPath);
-    formatter.format("  </tr>");
-    formatter.format("  <tr><td>Software version: %s</td></tr>", Version.getVersion());
-    formatter.format("</table>");
+
+    if(!linksOnly){
+      formatter.format("<hr />");
+      formatter.format("<table class=\"footer\">");
+      formatter.format("  <tr>");
+      formatter.format("    <td><a href='%s/index.jsp' target='_top'>Main Index</a></td>", contextPath);
+      formatter.format("    <td><a href='%s/admin/index.jsp' target='_top'>Admin Index</a></td>", contextPath);
+      formatter.format("  </tr>");
+      formatter.format("  <tr><td>Software version: %s</td></tr>", Version.getVersion());
+      formatter.format("</table>");
+    }
     formatter.format("<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js\"></script>");
     formatter.format("<script src=\"%s/js/bootstrap.min.js\"></script>",contextPath);
     formatter.format("%n</body></html>");
@@ -177,16 +192,21 @@ public class FooterFilter implements Filter {
    * Writer the footer for public pages to the char array writer.
    */
   private static void addPublicFooter(final CharArrayWriter caw,
-                                      final HttpServletRequest request) throws IOException {
+                                      final HttpServletRequest request,
+                                      final boolean linksOnly) throws IOException {
     final String contextPath = request.getContextPath();
     final Formatter formatter = new Formatter(caw);
-    formatter.format("<hr />");
-    formatter.format("<table>");
-    formatter.format("  <tr>");
-    formatter.format("    <td><a href='%s/public/index.jsp' target='_top'>Public Index</a></td>", contextPath);
-    formatter.format("  </tr>");
-    formatter.format("  <tr><td>Software version: %s</td></tr>", Version.getVersion());
-    formatter.format("</table>");
+    if(!linksOnly){
+      formatter.format("<hr />");
+      formatter.format("<table>");
+      formatter.format("  <tr>");
+      formatter.format("    <td><a href='%s/public/index.jsp' target='_top'>Public Index</a></td>", contextPath);
+      formatter.format("  </tr>");
+      formatter.format("  <tr><td>Software version: %s</td></tr>", Version.getVersion());
+      formatter.format("</table>");
+    }
+    formatter.format("<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js\"></script>");
+    formatter.format("<script src=\"%s/js/bootstrap.min.js\"></script>",contextPath);
     formatter.format("%n</body></html>");
   }
 
