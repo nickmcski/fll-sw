@@ -33,3 +33,80 @@ p.totalscore {
 	font-weight: bold;
 	font-size: larger;
 }
+
+.score_header {
+	position: fixed;
+    left: 0px;
+    top: 0px;
+    height: 100px;
+    width: 100%;
+    background: #777;
+    padding: 20px;
+}
+.score_header h1{
+	color: gold;
+	width: 100%;
+	text-align: center;
+	font-weiht: 900;
+}
+
+
+.score_body {
+	padding-top: 110px;
+    padding-bottom: 110px;
+	height:100%;
+}
+
+.score_footer {
+	position: fixed;
+    left: 0px;
+    bottom: 0px;
+    height: 100px;
+    width: 100%;
+    background: #999;
+    padding: 20px
+}
+
+.score_background {
+	background-image: url("https://upload.wikimedia.org/wikipedia/commons/0/0c/Saskatchewan_Farm_Elevator.jpg");
+   -webkit-filter: blur(5px);
+   -moz-filter: blur(5px);
+   -o-filter: blur(5px);
+   -ms-filter: blur(5px);
+   filter: blur(5px);
+   width: 100%;
+   height: 100%;
+   z-index: -1;
+   left: 0;
+   position: fixed;
+   right: 0;
+   background-position: center;
+}
+.score_body > .content {
+	background-color: white;
+	opacity: 0.75;
+	height:100%;
+	
+}
+
+.score_footer > .entry {
+    width: 24.8%;
+    display: inline-block;
+    /* border: 1px solid pink; */
+    text-align: center;
+    height: 100%;
+    background-color: white;
+    opacity: 0.75;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.entry > .team {
+	text-align:center;
+}
+
+.entry > .score {
+	color:red;
+	display:inline-block;
+	padding-right: 8px;
+}
