@@ -124,7 +124,7 @@ $(document).ready(function() {
           <!-- submit button -->
           <td align='left'>
             <!--<font face='arial' size='4'><b>Submit</b></font>-->
-            <input class='dark_bg' type="submit" value="Submit" id='enter_submit'>
+            <input class='btn btn-success btn-lg' type="submit" value="Submit" id='enter_submit'>
           </td>
         </tr>
       

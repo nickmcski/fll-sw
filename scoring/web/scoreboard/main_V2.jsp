@@ -1,5 +1,11 @@
 <%@ include file="/WEB-INF/jspf/init.jspf"%>
-
+<%
+    if (request.getParameter("pit") != null) {
+        %>
+        <c:set var="pit" value="TRUE"/>
+        <%
+    }
+%>
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -17,11 +23,17 @@ html, body {
  <h1>Welcome to the 2017 Crown Cup!</h1>
  </div>
  <div class="score_body">
-  <div class="content">
+  <div class="content-wrap">
+   <div class="content">
+   <c:if test="${pit}">
+   	<p>Hello pit</p>
+   	</c:if>
+   </div>
   </div>
  </div>
  <div class="score_footer">
-  <div class="entry">
+ <!-- 
+   <div class="entry">
   	<p class="team">Team 1: The Test team from Tesla</p>
   	<p class="score">Run 1: 212 Points</p>
   	<p class="score">Run 2: 512 Points</p>
@@ -38,14 +50,25 @@ html, body {
   	<p class="score">Run 1: 212 Points</p>
   	<p class="score">Run 2: 512 Points</p>
   	<p class="score">Run 3: 13 Points</p>
-  	</div>
+  </div>
   
   <div class="entry">
   	<p class="team">Team 4: Forth the horth</p>
   	<p class="score">Run 1: 212 Points</p>
   	<p class="score">Run 2: 512 Points</p>
   	<p class="score">Run 3: 13 Points</p>
-  	</div>
+  </div>
+ -->
  </div>
+ <script src="loadlast4.js"></script>
+ <script src="loadpit.js"></script>
+ <script>
+ window.onload = init;
+ 
+ function init(){
+   <c:if test="${pit}">initpit();</c:if>
+   init4();
+ }
+ </script>
 </body>
 </html>

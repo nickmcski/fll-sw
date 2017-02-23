@@ -37,7 +37,7 @@ td .score-error {
     </style>
 
 <script language="javascript">
-    <c:if test="${not isBye}">
+<c:if test="${not isBye}">
 
 
 <!-- No Show -->

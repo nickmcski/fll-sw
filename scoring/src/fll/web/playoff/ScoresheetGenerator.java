@@ -552,7 +552,7 @@ public class ScoresheetGenerator {
           byte[] sigDataFile = Base64.decode(m_signature[i].substring(22));
           BufferedImage signatureImage = ImageIO.read(new ByteArrayInputStream(sigDataFile));
           // Image.getInstance(m_signature[i]);
-          signature =Image.getInstance(signatureImage, Color.pink);
+          signature =Image.getInstance(signatureImage, Color.white);
         } catch (MalformedURLException e) {
           e.printStackTrace();
         } catch (IOException e) {

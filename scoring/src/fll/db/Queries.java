@@ -712,6 +712,9 @@ public final class Queries {
     columns.append(", Verified");
     values.append(", "
         + request.getParameter("Verified"));
+    
+    columns.append(", Signature");
+    values.append(", '" + request.getParameter("signature") + "'");
 
     // now do each goal
     for (final AbstractGoal element : performanceElement.getGoals()) {

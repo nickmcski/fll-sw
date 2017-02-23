@@ -121,7 +121,8 @@ public class HeaderFilter implements Filter {
   private boolean noHeader(String url) {
     if (url.endsWith("welcome.jsp")) {
       return true;
-    } else if (url.indexOf("scoreboard") != -1 && !url.endsWith("index.jsp")) {
+    } else if (url.indexOf("scoreboard") != -1
+        && !(url.endsWith("index.jsp") || url.endsWith("V2.jsp"))) {
       return true;
     } else if (url.indexOf("playoff/remoteMain.jsp") != -1) {
       return true;
@@ -141,6 +142,7 @@ public class HeaderFilter implements Filter {
       return false;
     }
   }
+
 
   /**
    * Writer the header to the char array writer.
