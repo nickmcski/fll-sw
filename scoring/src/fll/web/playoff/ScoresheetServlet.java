@@ -8,7 +8,6 @@ package fll.web.playoff;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -26,8 +25,6 @@ import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.JobName;
 import javax.print.attribute.standard.MediaSizeName;
 import javax.print.attribute.standard.OrientationRequested;
-import javax.print.event.PrintJobEvent;
-import javax.print.event.PrintJobListener;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -36,12 +33,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
-import net.mtu.eggplant.util.sql.SQLFunctions;
-
 import org.apache.log4j.Logger;
 import org.icepush.PushContext;
 
-import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 
 import fll.db.Queries;
@@ -50,6 +44,7 @@ import fll.util.LogUtils;
 import fll.web.ApplicationAttributes;
 import fll.web.BaseFLLServlet;
 import fll.xml.ChallengeDescription;
+import net.mtu.eggplant.util.sql.SQLFunctions;
 
 @WebServlet("/playoff/ScoresheetServlet")
 public class ScoresheetServlet extends BaseFLLServlet {
