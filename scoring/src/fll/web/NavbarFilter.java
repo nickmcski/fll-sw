@@ -162,6 +162,7 @@ public class NavbarFilter implements Filter {
     ft.format("<ul class=\"nav navbar-nav\">");
     // Links
     ft.format("<li class=\"active\"><a href=\"%s\">Home</a></li>", cp);
+    ft.format("<li><a href=\"%s/scoreboard/main_V2.jsp?pit\">Scoreboard</a></li>", cp);
     ft.format("</ul>");
 
     ft.format("<ul class=\"nav navbar-nav navbar-right\">");
