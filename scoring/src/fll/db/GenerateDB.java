@@ -227,7 +227,7 @@ public final class GenerateDB {
         createStatement.append(" ComputedTotal float DEFAULT NULL,");
         performanceColumns.append("StandardizedScore,");
         createStatement.append(" StandardizedScore float default NULL,");
-        performanceColumns.append("Signature");
+        performanceColumns.append("Signature, ");
         createStatement.append(" Signature LONGVARCHAR DEFAULT NULL,");
         performanceColumns.append("Refree");
         createStatement.append(" Refree LONGVARCHAR DEFAULT NULL,");
