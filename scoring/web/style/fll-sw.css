@@ -115,3 +115,7 @@ p.totalscore {
 	display:inline-block;
 	padding-right: 8px;
 }
+
+.pit_scores {
+	width: 50%;
+}

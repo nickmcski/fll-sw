@@ -26,7 +26,7 @@ html, body {
   <div class="content-wrap">
    <div class="content">
    <c:if test="${pit}">
-   	<p>Hello pit</p>
+   	<p>This page requires JavaScript</p>
    	</c:if>
    </div>
   </div>
