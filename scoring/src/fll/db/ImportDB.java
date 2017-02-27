@@ -441,6 +441,7 @@ public final class ImportDB {
     }
     performance.put("ComputedTotal".toLowerCase(), "float");
     performance.put("StandardizedScore".toLowerCase(), "float");
+    performance.put("Signature".toLowerCase(), "varchar(128)");
     typeInfo.put("Performance".toLowerCase(), performance);
 
     final Map<String, String> finalScores = new HashMap<String, String>();

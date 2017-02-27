@@ -167,6 +167,20 @@ public class DatabaseTeamScore extends TeamScore {
     }
     return "";
   }
+  
+  public String getRefName() {
+    if(!scoreExists()) {
+      return null;
+    } else {
+      try{
+        return getResultSet().getString("Referee");
+      }catch (final SQLException sqle) {
+        System.err.println("Error getting timestamp");
+        sqle.printStackTrace();
+      }
+    }
+    return null;
+  }
 
   /**
    * @see fll.web.playoff.TeamScore#scoreExists()

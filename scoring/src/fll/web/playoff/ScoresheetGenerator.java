@@ -95,6 +95,7 @@ public class ScoresheetGenerator {
       m_number[i] = null;
       m_time[i] = null;
       m_signature[i] = null;
+      m_refName[i] = null;
     }
 
     setChallengeInfo(description);
@@ -160,6 +161,7 @@ public class ScoresheetGenerator {
         m_number[i] = null;
         m_time[i] = null;
         m_signature[i] = null;
+        m_refName[i] = null;
       }
     } else {
       final String division = request.getParameter("division");
@@ -286,7 +288,7 @@ public class ScoresheetGenerator {
     SimpleDateFormat format = new SimpleDateFormat("hh:mm:ss aa");
     m_time[0] = format.format(score.getTime());
     m_signature[0] = score.getSignatureBase64();
-    
+    m_refName[0] = score.getRefName();
     setChallengeInfo(description);
   }
   /**
@@ -303,6 +305,7 @@ public class ScoresheetGenerator {
     m_division = new String[m_numSheets];
     m_time = new String[m_numSheets];
     m_signature = new String[m_numSheets];
+    m_refName = new String[m_numSheets];
   }
 
   private static final Font ARIAL_8PT_NORMAL = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.NORMAL,
@@ -443,9 +446,9 @@ public class ScoresheetGenerator {
 
       scoreSheet.addCell(head);
 
-      final PdfPTable teamInfo = new PdfPTable(7);
+      final PdfPTable teamInfo = new PdfPTable(8);
       teamInfo.setWidthPercentage(100);
-      teamInfo.setWidths(new float[] { 1f, 1f, 1f, 1f, 1f, 1f, .9f });
+      teamInfo.setWidths(new float[] { 1f, 1f, 1f, 1f, 1f, 1f, .9f, .9f });
 
       // Time label cell
       final Paragraph timeP = new Paragraph("Time:", ARIAL_10PT_NORMAL);
@@ -486,9 +489,13 @@ public class ScoresheetGenerator {
 
       final PdfPCell temp1 = new PdfPCell(scoreSheet.getDefaultCell());
       // temp1.setColspan(2);
-      temp1.addElement(new Paragraph("Referee ________", ARIAL_8PT_NORMAL));
+      temp1.addElement(new Paragraph("Referee :", ARIAL_10PT_NORMAL));
       temp1.setHorizontalAlignment(Element.ALIGN_RIGHT);
       teamInfo.addCell(temp1);
+      final PdfPCell refName = new PdfPCell(scoreSheet.getDefaultCell());
+      refName.addElement(new Paragraph(null == m_refName[i] ? SHORT_BLANK : String.valueOf(m_refName[i]),
+                                           COURIER_10PT_NORMAL));
+      teamInfo.addCell(refName);
 
       // Team number label cell
       final Paragraph nbrP = new Paragraph("Team #:", ARIAL_10PT_NORMAL);
@@ -508,7 +515,7 @@ public class ScoresheetGenerator {
       divP.setAlignment(Element.ALIGN_RIGHT);
       final PdfPCell divlc = new PdfPCell(scoreSheet.getDefaultCell());
       divlc.addElement(divP);
-      divlc.setColspan(2);
+      divlc.setColspan(3);
       teamInfo.addCell(divlc);
       // Team division value cell
       final Paragraph divV = new Paragraph(m_division[i], COURIER_10PT_NORMAL);
@@ -526,7 +533,7 @@ public class ScoresheetGenerator {
       final Paragraph nameP = new Paragraph("Team Name:", ARIAL_10PT_NORMAL);
       nameP.setAlignment(Element.ALIGN_RIGHT);
       final PdfPCell namelc = new PdfPCell(scoreSheet.getDefaultCell());
-      namelc.setColspan(2);
+      namelc.setColspan(3);
       namelc.addElement(nameP);
       teamInfo.addCell(namelc);
       // Team name value cell
@@ -544,7 +551,7 @@ public class ScoresheetGenerator {
       scoreSheet.addCell(teamInfoCell);
       
       Image signature = null;
-      if(m_signature[i] != null && m_signature[i] != ""){
+      if(m_signature[i] != null && m_signature[i] != "" && m_signature[0].length() > 23){
         try {
           //byte[] sigDataFile = Base64.decode(m_signature[i]);
           //LOGGER.info(m_signature[i]);
@@ -892,6 +899,8 @@ public class ScoresheetGenerator {
   private String[] m_time;
   
   private String[] m_signature;
+  
+  private String[] m_refName;
 
   private PdfPTable m_goalsTable;
 
