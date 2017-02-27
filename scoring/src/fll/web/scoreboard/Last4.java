@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 
 import fll.Team;
 import fll.db.Queries;
+import fll.util.SQLUtil;
 import fll.web.ApplicationAttributes;
 import fll.web.BaseFLLServlet;
 
@@ -64,7 +65,7 @@ public class Last4 extends BaseFLLServlet {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
+    SQLUtil.close(connection, prep,rs);
   }
   
   private void printTeam(ResultSet rs, Connection conn, Formatter formatter) throws SQLException{
