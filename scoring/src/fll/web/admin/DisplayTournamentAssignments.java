@@ -48,7 +48,7 @@ public class DisplayTournamentAssignments extends BaseFLLServlet {
       response.setContentType("text/html");
 
       final Formatter formatter = new Formatter(response.getWriter());
-      formatter.format("<html><body>");
+      formatter.format("<html><head></head><body>");
 
       connection = datasource.getConnection();
 
