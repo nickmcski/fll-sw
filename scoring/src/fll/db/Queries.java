@@ -41,6 +41,7 @@ import fll.Utilities;
 import fll.util.FLLInternalException;
 import fll.util.FLLRuntimeException;
 import fll.util.LogUtils;
+import fll.web.CookieUtils;
 import fll.web.playoff.DatabaseTeamScore;
 import fll.web.playoff.HttpTeamScore;
 import fll.web.playoff.Playoff;
@@ -716,6 +717,15 @@ public final class Queries {
     columns.append(", Signature");
     values.append(", '" + request.getParameter("signature") + "'");
 
+    
+    //Get the Refree name to log.
+    final Collection<String> loginKeys = CookieUtils.findLoginKey(request);
+    final String user = Queries.checkValidLogin(connection, loginKeys);
+
+    columns.append(", Referee");
+    values.append(", '" + user + "'");
+    
+    
     // now do each goal
     for (final AbstractGoal element : performanceElement.getGoals()) {
       if (!element.isComputed()) {
