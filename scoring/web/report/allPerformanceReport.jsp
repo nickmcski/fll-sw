@@ -31,10 +31,11 @@
            <th>Run</th>
            <th>Verified</th>
            <th>Score</th>
+           <th>Referee</th>
            <th>View scoresheet</th>
           </tr>
           <sql:query var="result" dataSource="${datasource}">
-            SELECT Teams.TeamNumber,Teams.TeamName,Teams.Organization,Performance.ComputedTotal,Performance.NoShow,Performance.RunNumber,Performance.Verified
+            SELECT Teams.TeamNumber,Teams.TeamName,Teams.Organization,Performance.ComputedTotal,Performance.NoShow,Performance.RunNumber,Performance.Verified,Performance.Referee
                      FROM Teams,Performance,current_tournament_teams
                      WHERE Teams.TeamNumber = Performance.TeamNumber
                        AND current_tournament_teams.TeamNumber = Teams.TeamNumber
@@ -56,7 +57,7 @@
               <c:if test="${row.NoShow != True}">
                 <td><c:out value="${row.ComputedTotal}"/></td>
               </c:if>
-              
+              <td><c:out value="${row.Referee}"/></td>
               <td><a href="<c:url value='/playoff/ScoresheetServlet?team=${row.TeamNumber}&match=${row.RunNumber}'/>">Print scoresheet</a></td>
             </tr>
           </c:forEach>
