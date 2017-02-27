@@ -33,25 +33,25 @@ public class Timer extends BaseFLLServlet {
    *      javax.servlet.http.HttpServletResponse, javax.servlet.ServletContext,
    *      javax.servlet.http.HttpSession)
    */
-  
-  public static int version = 1;
+
+  public static int countdown = 1;
+
   @Override
   protected void processRequest(HttpServletRequest request,
                                 HttpServletResponse response,
                                 ServletContext application,
                                 HttpSession session)
       throws IOException, ServletException {
-    // TODO Auto-generated method stub
     response.setContentType("text/plain");
     Formatter out = new Formatter(response.getWriter());
-//    out.format("The GO attribute is %s" , request.getAttribute("go"));
-    if(request.getParameter("go") != null){
-      Timer.version++;
-    }else{
-      out.format("%s", version);
+    if (request.getParameter("go") != null) { // The go attribute is used on the
+                                              // control page to signal the
+                                              // display to start the countdown
+      Timer.countdown++;
+    } else {
+      out.format("%s", countdown);
     }
 
   }
-  
 
 }
