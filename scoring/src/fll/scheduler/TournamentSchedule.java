@@ -154,7 +154,7 @@ public class TournamentSchedule implements Serializable {
   /**
    * Always output without 24-hour time and without AM/PM.
    */
-  private static final DateTimeFormatter OUTPUT_TIME_FORMAT = DateTimeFormatter.ofPattern("h:mm");
+  private static final DateTimeFormatter OUTPUT_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
   /**
    * Parse times as 24-hour and then use
@@ -190,11 +190,15 @@ public class TournamentSchedule implements Serializable {
     try {
       // first try with the generic parser
       final LocalTime time = LocalTime.parse(str);
+      if(time.getHour() < EARLIEST_HOUR)
+        time.plusHours(12);
       return time;
     } catch (final DateTimeParseException e) {
       // try with seconds and AM/PM
       try {
         final LocalTime time = LocalTime.parse(str, TIME_FORMAT_AM_PM_SS);
+        if(time.getHour() < EARLIEST_HOUR)
+          time.plusHours(12);
         return time;
       } catch (final DateTimeParseException ampme) {
         // then try with 24-hour clock
@@ -973,7 +977,8 @@ public class TournamentSchedule implements Serializable {
   }
 
   private static final Font TEAM_TITLE_FONT = FontFactory.getFont(FontFactory.TIMES, 12, Font.BOLD);
-
+  private static final Font TEAM_TITLE_FONT_BIG = FontFactory.getFont(FontFactory.TIMES, 24, Font.BOLD);
+  private static final Font TEAM_TITLE_FONT_GIANT = FontFactory.getFont(FontFactory.TIMES, 36, Font.BOLD);
   private static final Font TEAM_HEADER_FONT = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.BOLD);
 
   private static final Font TEAM_VALUE_FONT = FontFactory.getFont(FontFactory.HELVETICA, 10, Font.NORMAL);
@@ -989,13 +994,13 @@ public class TournamentSchedule implements Serializable {
       throws DocumentException {
     final Paragraph para = new Paragraph();
     para.add(new Chunk(String.format("Detailed schedule for Team #%d - %s", si.getTeamNumber(), si.getTeamName()),
-                       TEAM_TITLE_FONT));
+                       TEAM_TITLE_FONT_BIG));
     para.add(Chunk.NEWLINE);
 
     para.add(new Chunk(String.format("Organization: %s", si.getOrganization()), TEAM_TITLE_FONT));
     para.add(Chunk.NEWLINE);
 
-    para.add(new Chunk("Division: ", TEAM_HEADER_FONT));
+    para.add(new Chunk("Judging Group: ", TEAM_HEADER_FONT));
     para.add(new Chunk(si.getAwardGroup(), TEAM_VALUE_FONT));
     para.add(Chunk.NEWLINE);
 
@@ -1025,14 +1030,61 @@ public class TournamentSchedule implements Serializable {
                        TEAM_HEADER_FONT));
 
     para.add(Chunk.NEWLINE);
-    para.add(new Chunk("Note that there may be more judging and a head to head round after this judging, please see the main tournament schedule for these details.",
-                       TEAM_HEADER_FONT));
+    //para.add(new Chunk("Note that there may be more judging and a head to head round after this judging, please see the main tournament schedule for these details.",
+    //                   TEAM_HEADER_FONT));
+    para.add(Chunk.NEWLINE);
+//    para.add(Chunk.NEWLINE);
+//    para.add(Chunk.NEWLINE);
+    getFooterInformation(para);
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Team #" + si.getTeamNumber(), TEAM_TITLE_FONT_GIANT));
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("" + si.getTeamName(), TEAM_TITLE_FONT_GIANT));
+    
+    para.setKeepTogether(true);
+    
+
+    detailedSchedules.add(para);
+    detailedSchedules.add(Chunk.NEXTPAGE);
+  }
+  
+  private static void getFooterInformation(Paragraph para){
+    para.add(new Chunk("Event Schedule", TEAM_TITLE_FONT));
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Opening Ceremonies: ", TEAM_HEADER_FONT));
+    para.add(new Chunk("8:00-8:30", TEAM_VALUE_FONT));
+    para.add(Chunk.NEWLINE);
+    //para.add(new Chunk("Lunch 12:00-12:30", TEAM_VALUE_FONT));
+    //para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Guest Speaker: ", TEAM_HEADER_FONT));
+    para.add(new Chunk("3:00-4:00", TEAM_VALUE_FONT));
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Awards:", TEAM_HEADER_FONT));
+    para.add(new Chunk("4:00-4:30", TEAM_VALUE_FONT));
+    
+    para.add(Chunk.NEWLINE);
     para.add(Chunk.NEWLINE);
     para.add(Chunk.NEWLINE);
     para.add(Chunk.NEWLINE);
 
-    para.setKeepTogether(true);
-    detailedSchedules.add(para);
+    para.add(new Chunk("WIFI",TEAM_TITLE_FONT));
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Network: ", TEAM_HEADER_FONT));
+    para.add(new Chunk("FLL", TEAM_VALUE_FONT));
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Password: ", TEAM_HEADER_FONT));
+    para.add(new Chunk("eF8uGKiT", TEAM_VALUE_FONT));
+    para.add(Chunk.NEWLINE);
+    para.add(new Chunk("Performance Results & Schedules: ", TEAM_HEADER_FONT));
+    para.add(new Chunk("http://fll.sait.ca/   (Only available at SAIT)", TEAM_VALUE_FONT));
+    para.add(Chunk.NEWLINE);
   }
 
   /**
@@ -1584,7 +1636,12 @@ public class TournamentSchedule implements Serializable {
           throw new RuntimeException("Error parsing table information from: "
               + table);
         }
-        final LocalTime perf1Time = parseTime(perf1Str);
+        LocalTime perf1Time = parseTime(perf1Str);
+        if(perf1Time.getHour() < 7){
+          perf1Time = perf1Time.plusHours(12);
+        }
+        
+
         final PerformanceTime performance = new PerformanceTime(perf1Time, tablePieces[0],
                                                                 Utilities.NUMBER_FORMAT_INSTANCE.parse(tablePieces[1])
                                                                                                 .intValue());
